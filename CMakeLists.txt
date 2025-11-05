@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(RobotVisionApp)
+project(Throwbot)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,8 +19,7 @@ set(PYLON_ROOT "/opt/pylon")
 set(PYLON_INCLUDE_DIR "${PYLON_ROOT}/include")
 file(GLOB PYLON_LIBS "${PYLON_ROOT}/lib/*.so")
 
-add_executable(${PROJECT_NAME} main.cpp Vision.h Vision.cpp
-    RobotPathJoint.h RobotPathJoint.cpp)
+add_executable(${PROJECT_NAME} main.cpp Vision.h Vision.cpp)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
