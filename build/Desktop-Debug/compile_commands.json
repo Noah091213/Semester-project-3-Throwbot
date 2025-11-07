@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/home/ckhrix/Code/Semester-project-3-Throwbot/build/Desktop-Debug",
+  "command": "/usr/bin/clang++-18 -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_SYSTEM_DYN_LINK -DBOOST_SYSTEM_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -I/opt/pylon/include -isystem /usr/include/opencv4 -g -std=gnu++17 -fcolor-diagnostics -o CMakeFiles/Throwbot.dir/main.cpp.o -c /home/ckhrix/Code/Semester-project-3-Throwbot/main.cpp",
+  "file": "/home/ckhrix/Code/Semester-project-3-Throwbot/main.cpp",
+  "output": "CMakeFiles/Throwbot.dir/main.cpp.o"
+},
+{
+  "directory": "/home/ckhrix/Code/Semester-project-3-Throwbot/build/Desktop-Debug",
+  "command": "/usr/bin/clang++-18 -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_SYSTEM_DYN_LINK -DBOOST_SYSTEM_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -I/opt/pylon/include -isystem /usr/include/opencv4 -g -std=gnu++17 -fcolor-diagnostics -o CMakeFiles/Throwbot.dir/Vision.cpp.o -c /home/ckhrix/Code/Semester-project-3-Throwbot/Vision.cpp",
+  "file": "/home/ckhrix/Code/Semester-project-3-Throwbot/Vision.cpp",
+  "output": "CMakeFiles/Throwbot.dir/Vision.cpp.o"
+},
+{
+  "directory": "/home/ckhrix/Code/Semester-project-3-Throwbot/build/Desktop-Debug",
+  "command": "/usr/bin/clang++-18 -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_SYSTEM_DYN_LINK -DBOOST_SYSTEM_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -I/opt/pylon/include -isystem /usr/include/opencv4 -g -std=gnu++17 -fcolor-diagnostics -o CMakeFiles/Throwbot.dir/Trajectory.cpp.o -c /home/ckhrix/Code/Semester-project-3-Throwbot/Trajectory.cpp",
+  "file": "/home/ckhrix/Code/Semester-project-3-Throwbot/Trajectory.cpp",
+  "output": "CMakeFiles/Throwbot.dir/Trajectory.cpp.o"
+}
+]

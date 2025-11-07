@@ -19,7 +19,8 @@ set(PYLON_ROOT "/opt/pylon")
 set(PYLON_INCLUDE_DIR "${PYLON_ROOT}/include")
 file(GLOB PYLON_LIBS "${PYLON_ROOT}/lib/*.so")
 
-add_executable(${PROJECT_NAME} main.cpp Vision.h Vision.cpp)
+add_executable(${PROJECT_NAME} main.cpp Vision.h Vision.cpp
+    Trajectory.h Trajectory.cpp)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE

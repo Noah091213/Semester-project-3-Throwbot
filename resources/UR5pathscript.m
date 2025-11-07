@@ -168,5 +168,5 @@ disp('Release joint configuration (deg):');
 disp(q_release_deg);
 
 %% -------------------- 12. Export trajectory ---------------------
-writematrix([tvec(:), q_traj],'path.csv');
-fprintf('Prajectory exported to path.csv\n');
+writematrix([t(), q_traj],'path.csv');
+fprintf('Path exported to path.csv\n');

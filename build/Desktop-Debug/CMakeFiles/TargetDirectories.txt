@@ -1,0 +1,3 @@
+/home/ckhrix/Code/Semester-project-3-Throwbot/build/Desktop-Debug/CMakeFiles/Throwbot.dir
+/home/ckhrix/Code/Semester-project-3-Throwbot/build/Desktop-Debug/CMakeFiles/edit_cache.dir
+/home/ckhrix/Code/Semester-project-3-Throwbot/build/Desktop-Debug/CMakeFiles/rebuild_cache.dir
