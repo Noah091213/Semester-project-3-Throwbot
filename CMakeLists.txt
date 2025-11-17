@@ -22,8 +22,13 @@ set(PYLON_ROOT "/opt/pylon")
 set(PYLON_INCLUDE_DIR "${PYLON_ROOT}/include")
 file(GLOB PYLON_LIBS "${PYLON_ROOT}/lib/*.so")
 
-add_executable(${PROJECT_NAME} main.cpp Vision.h Vision.cpp
-    Trajectory.h Trajectory.cpp matlabComm.hpp matlabComm.cpp)
+add_executable(${PROJECT_NAME} main.cpp 
+    Vision.h Vision.cpp
+    Trajectory.h Trajectory.cpp 
+    matlabComm.hpp matlabComm.cpp
+    robotControl.h robotControl.cpp
+    linearAlgebra.h linearAlgebra.cpp
+    Gripper.h Gripper.cpp)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
@@ -46,7 +51,8 @@ target_link_libraries(${PROJECT_NAME}
         "${MATLAB_ROOT}/extern/bin/glnxa64/libMatlabDataArray.so" dl pthread
 )
 
-set_target_properties(run PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
     BUILD_WITH_INSTALL_RPATH true
     INSTALL_RPATH "${MATLAB_ROOT}/extern/bin/glnxa64"
 )
+
