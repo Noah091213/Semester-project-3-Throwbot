@@ -5,10 +5,10 @@
 
 using namespace std;
 
-class linearAlgebra {
-public:
+
+
     // Transform position (3D or 6D) using a 4x4 transformation matrix
-    vector<double> transformPosition(vector<double> position, vector<vector<double>> transformationMatrix) {
+    vector<double> linearAlgebra::transformPosition(vector<double> position, vector<vector<double>> transformationMatrix) {
         // Input position in frame A, output in frame B, given transformation matrix from A to B
         
         // Safety checks
@@ -65,7 +65,7 @@ public:
     }
 
     // Invert a 4x4 transformation matrix
-    vector<vector<double>> invertTransformationMatrix(vector<vector<double>> matrix) {
+    vector<vector<double>> linearAlgebra::invertTransformationMatrix(vector<vector<double>> matrix) {
         // Safety check
         if (matrix.size() != 4 || matrix[0].size() != 4) {
             cout << "[Algebra Error] Only 4x4 matrix inversion is supported." << endl;
@@ -105,9 +105,10 @@ public:
         return inv;
     }
 
-private:
+
+
     // Convert Euler angles to rotation matrix
-    vector<vector<double>> eulerToRotationMatrix(double rx, double ry, double rz) {
+    vector<vector<double>> linearAlgebra::eulerToRotationMatrix(double rx, double ry, double rz) {
         double cx = cos(rx), sx = sin(rx);
         double cy = cos(ry), sy = sin(ry);
         double cz = cos(rz), sz = sin(rz);
@@ -120,8 +121,10 @@ private:
         };
     }
 
+
+
     // Convert rotation matrix to Euler angles
-    vector<double> rotationMatrixToEuler(const vector<vector<double>>& R) {
+    vector<double> linearAlgebra::rotationMatrixToEuler(const vector<vector<double>>& R) {
         double ry = -asin(R[2][0]);
         double cy = cos(ry);
         double rx, rz;
@@ -137,4 +140,3 @@ private:
         return {rx, ry, rz};
     }
 
-};

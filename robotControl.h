@@ -20,7 +20,7 @@ public:
 
     void disconnect();
 
-    void speedJ(const std::vector<std::vector<double>>& qd, double a, double t);
+    void speedJ(const std::vector<std::vector<double>>& qd, double a, double dt, double leadTime);
     void speedJ(const std::vector<double>& qd, double a, double t);
 
     void moveJ(const std::vector<double>& worldPosition, double v = 1.05, double a = 1.4, bool wait = true);
@@ -29,14 +29,15 @@ public:
     std::vector<double> getToolPosition();
 
 private:
+    int freq = 125;
+    std::vector<double> q_min = {-2.79253, -3.14159, -2.53073, -1.74533, 1.13446, -6.28319};
+    std::vector<double> q_max = {0.43633, 0.0, 0.0, 1.57080, 1.83260, 6.28319};
+
     std::vector<std::vector<double>> transformW2R;
     std::string robot_ip;
 
     std::unique_ptr<ur_rtde::RTDEControlInterface> rtde_control;
     std::unique_ptr<ur_rtde::RTDEReceiveInterface> rtde_receive;
-
-    std::vector<double> q_min;
-    std::vector<double> q_max;
 
     std::vector<double> getViableIK(std::vector<double> position);
     bool isWithinLimits(std::vector<double> q);

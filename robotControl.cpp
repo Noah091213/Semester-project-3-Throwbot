@@ -9,15 +9,10 @@
 
 using namespace ur_rtde;
 
-class robotControl {
-public:
+
+
     // Constructor (connects automatically)
-    robotControl(std::string ip = "192.168.100.11", 
-                          std::vector<std::vector<double>> transformW2R = {{
-                            { 0.3839,  0.9234, 0.0000, -0.4980},
-                            {-0.9234,  0.3839, 0.0012,  0.0906},
-                            { 0.0011, -0.0005, 1.0000, -0.0311},
-                            {0, 0, 0, 1}}}) {
+    robotControl::robotControl(std::string ip, std::vector<std::vector<double>> transformW2R) {
     
         robot_ip = ip;
         this->transformW2R = transformW2R;
@@ -36,14 +31,18 @@ public:
 
     }
 
+
+
     // Destructor (automatically disconnects if still connected)
-    ~robotControl() {
+    robotControl::~robotControl() {
         Gripper::bye();
         disconnect();
     }
 
+
+
     // Manually disconnect
-    void disconnect() {
+    void robotControl::disconnect() {
         if (rtde_control) {
             try {
                 rtde_control->stopScript();  // Stop any running program
@@ -56,8 +55,10 @@ public:
         }
     }
 
+
+
     // Send multiple speedJ commands (vector of vectors)
-    void speedJ(const std::vector<std::vector<double>>& qd, double a, double dt, double leadTime) {
+    void robotControl::speedJ(const std::vector<std::vector<double>>& qd, double a, double dt, double leadTime) {
         if (!rtde_control) {
             throw std::runtime_error("[Robot Error] SpeedJ failed. Not connected to robot.");
         }
@@ -87,8 +88,10 @@ public:
         }
     }
 
+
+
     // Send single speedJ command (vector)
-    void speedJ(const std::vector<double>& qd, double a, double t){
+    void robotControl::speedJ(const std::vector<double>& qd, double a, double t){
         if (!rtde_control) {
             throw std::runtime_error("[Robot Error] SpeedJ failed. Not connected to robot.");
         }
@@ -96,8 +99,10 @@ public:
         rtde_control->speedJ(qd, a);
     }
 
+
+
     // MoveJ to world position
-    void moveJ(const std::vector<double>& worldPosition, double v = 1.05, double a = 1.4, bool wait = true) {
+    void robotControl::moveJ(const std::vector<double>& worldPosition, double v, double a, bool wait) {
         if (!rtde_control) {
             throw std::runtime_error("[Robot Error] MoveJ Failed. Not connected to robot.");
         }
@@ -118,16 +123,20 @@ public:
         rtde_control->moveJ(q, v, a, !wait);
     }
 
+
+
     // Get current joint positions
-    std::vector<double> getJointPositions() {
+    std::vector<double> robotControl::getJointPositions() {
         if (!rtde_receive) {
             throw std::runtime_error("[Robot Error] getJointPositions Failed. Not connected to robot.");
         }  
         return rtde_receive->getActualQ();
     } 
 
+
+
     // Get current tool position in world frame
-    std::vector<double> getToolPosition() {
+    std::vector<double> robotControl::getToolPosition() {
         if (!rtde_receive) {
             throw std::runtime_error("[Robot Error] getToolPosition Failed. Not connected to robot.");
         }  
@@ -142,18 +151,8 @@ public:
 
 
 
-
-private:
-    std::vector<std::vector<double>> transformW2R;
-    std::string robot_ip;
-    int freq = 125;
-    std::unique_ptr<RTDEControlInterface> rtde_control;
-    std::unique_ptr<RTDEReceiveInterface> rtde_receive;
-    std::vector<double> q_min = {-2.79253, -3.14159, -2.53073, -1.74533, 1.13446, -6.28319};
-    std::vector<double> q_max = {0.43633, 0.0, 0.0, 1.57080, 1.83260, 6.28319};
-
     // Helper: Get viable IK solution within joint limits
-    std::vector<double> getViableIK(std::vector<double> position) {
+    std::vector<double> robotControl::getViableIK(std::vector<double> position) {
         try {
             // Get current joint positions
             std::vector<double> qCurrent = rtde_receive->getActualQ();
@@ -175,8 +174,10 @@ private:
 
     }
 
+
+
     // Helper: Check if joint positions are within limits
-    bool isWithinLimits(std::vector<double> q) {
+    bool robotControl::isWithinLimits(std::vector<double> q) {
         for (size_t i = 0; i < q.size(); ++i) {
             if (q[i] < q_min[i] || q[i] > q_max[i]) {
                 return false;
@@ -185,4 +186,4 @@ private:
         return true;
     }
 
-};
+
