@@ -24,6 +24,7 @@ public:
     void speedJ(const std::vector<double>& qd, double a, double t);
 
     void moveJ(const std::vector<double>& worldPosition, double v = 1.05, double a = 1.4, bool wait = true);
+    void home();
 
     std::vector<double> getJointPositions();
     std::vector<double> getToolPosition();
@@ -32,6 +33,8 @@ private:
     int freq = 125;
     std::vector<double> q_min = {-2.79253, -3.14159, -2.53073, -1.74533, 1.13446, -6.28319};
     std::vector<double> q_max = {0.43633, 0.0, 0.0, 1.57080, 1.83260, 6.28319};
+
+    std::vector<double> homePosition = {-1.5708, -0.6981, -1.3090, -1.0472, 1.5708, 0.0};
 
     std::vector<std::vector<double>> transformW2R;
     std::string robot_ip;

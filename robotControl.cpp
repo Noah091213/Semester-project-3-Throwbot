@@ -3,6 +3,7 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <cmath>
 #include <ur_rtde/rtde_control_interface.h>
 #include <ur_rtde/rtde_receive_interface.h>
 #include "robotControl.h"
@@ -13,6 +14,8 @@ using namespace ur_rtde;
 
     // Constructor (connects automatically)
     robotControl::robotControl(std::string ip, std::vector<std::vector<double>> transformW2R) {
+
+        std::cout << "[Robot Info] Initializing robotControl..." << std::endl;
     
         robot_ip = ip;
         this->transformW2R = transformW2R;
@@ -27,9 +30,13 @@ using namespace ur_rtde;
             rtde_receive = nullptr;
         }
 
+        if (rtde_control && rtde_receive) {
+            std::cout << "[Robot Info] RTDE interfaces initialized." << std::endl;
+        }
+
         Gripper::connectGripper();
 
-    }
+    } 
 
 
 
@@ -73,19 +80,37 @@ using namespace ur_rtde;
             rtde_control->speedJ(speeds, a, dt - 0.002);
             count++;
 
-            if (count == leadTime * freq + 1) {
-                rtde_receive->getActualQ();
-                std::cout << "[Robot Info] Release point reached, robot joint position: ";
-                for (const auto& val : rtde_receive->getActualQ()) {
-                    std::cout << val << " ";
+            // Print joint positions
+            if (count % 25 == 0) {
+                std::vector<double> q = rtde_receive->getActualQ();
+                std::cout << "[Robot Info] Actual q " << count << ": ";
+                for (int i = 0; i < q.size(); ++i) {
+                    std::cout << (q[i] * (180/M_PI)) << " ";
                 }
                 std::cout << std::endl;
             }
 
+            // Release point
+            if (count == leadTime * freq + 1) {
+                std::vector<double> q = rtde_receive->getActualQ();
+                std::cout << "[Robot Info] Release at q " << count << ": ";
+                for (int i = 0; i < q.size(); ++i) {
+                    std::cout << (q[i] * (180/M_PI)) << " ";
+                }
+                std::cout << std::endl;
+                std::thread([]() {
+                    Gripper::release();  // runs independently
+                }).detach();
+            }
+
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;
-            std::this_thread::sleep_for(std::chrono::duration<double>(dt-elapsed.count()));
+            std::this_thread::sleep_for(std::chrono::duration<double>(std::max(0.0, dt - elapsed.count())));
+
         }
+
+        rtde_control->speedStop(5.0);   // 5 rad/s deceleration
+
     }
 
 
@@ -96,33 +121,35 @@ using namespace ur_rtde;
             throw std::runtime_error("[Robot Error] SpeedJ failed. Not connected to robot.");
         }
 
-        rtde_control->speedJ(qd, a);
+        rtde_control->speedJ(qd, a, t);
+
+        rtde_control->stopJ(5.0);   // 5 rad/s deceleration
+
     }
 
 
 
-    // MoveJ to world position
-    void robotControl::moveJ(const std::vector<double>& worldPosition, double v, double a, bool wait) {
+    // MoveJ to joint position
+    void robotControl::moveJ(const std::vector<double>& q, double v, double a, bool wait) {
         if (!rtde_control) {
             throw std::runtime_error("[Robot Error] MoveJ Failed. Not connected to robot.");
         }
 
-        std::vector<double> position = linearAlgebra().transformPosition(worldPosition, transformW2R);
-
-        std::vector<double> q = getViableIK(position);
-        if (q.empty()) {
-            throw std::runtime_error("[Robot Error] MoveJ Failed. No valid IK solution found.");
-        }
-
-        std::cout << "[Robot Info] Moving to Joint Positions: ";
-        for (const auto& val : q) {
-            std::cout << val << " ";
-        }
-        std::cout << std::endl;
-
         rtde_control->moveJ(q, v, a, !wait);
+
     }
 
+
+    // Move to home position
+    void robotControl::home() {
+        if (!rtde_control) {
+            throw std::runtime_error("[Robot Error] MoveJ Failed. Not connected to robot.");
+        }
+
+        std::cout << "[Robot Info] Moving to home position." << std::endl;
+
+        rtde_control->moveJ(homePosition, 1.05, 1.4);
+    }
 
 
     // Get current joint positions
@@ -141,12 +168,13 @@ using namespace ur_rtde;
             throw std::runtime_error("[Robot Error] getToolPosition Failed. Not connected to robot.");
         }  
         std::vector<double> toolPosR = rtde_receive->getActualTCPPose();
-        std::cout << "[Robot Info] Tool Position in Robot Frame: ";
-        for (const auto& val : toolPosR) {
-            std::cout << val << " ";
+        std::vector<double> toolPosW = linearAlgebra().transformPosition(toolPosR, linearAlgebra().invertTransformationMatrix(transformW2R));
+        std::cout << "[Robot Info] Tool Position in World Frame: ";
+        for (const auto& val : toolPosW) {
+            std::cout << val << ", ";
         }
         std::cout << std::endl;
-        return linearAlgebra().transformPosition(toolPosR, linearAlgebra().invertTransformationMatrix(transformW2R));
+        return toolPosW;
     }
 
 
@@ -185,5 +213,7 @@ using namespace ur_rtde;
         }
         return true;
     }
+
+
 
 
