@@ -1,0 +1,359 @@
+function output = throwCalc(input)
+    
+%% 1. Input extraction
+releasePosition = [input(1:3)];
+yaw             = input(4);
+pitch           = input(5);
+releaseVelocity = input(6);
+leadTime        = input(7);
+followTime      = input(8);
+frequency       = input(9);
+qStart          = [input(10:15)];
+transformW2R    = [input(16:19); 
+                   input(20:23); 
+                   input(24:27); 
+                   input(28:31)];
+
+%% 1. Parameters
+
+status = 100000;
+qStart = deg2rad([qStart]);
+
+% Joint limits (1x6 deg)
+q_min = [-160 -180 -145 -100 65 -360];
+q_max = [ 25 0 0 90 105 360];
+
+safetyOffset = 5;
+
+q_min = deg2rad(q_min + safetyOffset);
+q_max = deg2rad(q_max - safetyOffset);
+
+% TCP limits in world frame (m)
+x_min = 0.02; x_max = 2;
+y_min = 0.16; y_max = 0.62;
+z_min = 0.19; z_max = 2;
+
+dt = 1 / frequency; % Delta time; duration of each time step (s)
+
+releasePos = transformPosition(releasePosition, transformW2R); % Release position in base frame
+
+R = transformW2R(1:3,1:3);  % Rotation part of transformW2R transform
+t = transformW2R(1:3,4);    % Translation part of transformW2R transform
+% Base frame to world frame transform
+R2W = [R'  -R'*t;
+       0 0 0 1];
+
+%% 2. Load and Calibrate UR5 Model
+
+robot = loadrobot("universalUR5","DataFormat","row");  
+robot.DataFormat = 'row';
+robot.Gravity = [0 0 -9.81];
+
+% Rotate the model 180 deg to align with real UR5 robot
+Rz180 = axang2tform([0 0 1 pi]);
+robot.Base.Children{1}.Joint.setFixedTransform(Rz180);
+
+% Create a new rigid body for the TCP offset
+tcp = rigidBody('tcp_offset');
+
+% Define the 17 cm offset along Z
+offset = trvec2tform([0 0 0.17]);  % meters
+setFixedTransform(tcp.Joint, offset);
+
+% Attach it to the last link (tool0 or end-effector link)
+addBody(robot, tcp, robot.BodyNames{end});
+
+%% 3. Compute TCP orientation
+
+% Create a normalized vector to indicate direction of throw (World Frame)
+dir_world = [cos(pitch)*cos(yaw);
+             cos(pitch)*sin(yaw);
+             sin(pitch)];
+dir_world = dir_world / norm(dir_world);
+
+% Rotate dir to be in base frame
+dir = R * dir_world;
+dir = dir / norm(dir);
+
+% Create X, Y, Z for TCP in World Frame
+% Y-axis is opposite the direction vector
+y_axis = -dir_world;
+
+% Z-axis is pointing "down", found by projecting Y onto a vector pointing straight down
+g_down = [0; 0; -1];
+z_axis = g_down - (g_down' * y_axis) * y_axis;
+z_axis = z_axis / norm(z_axis);
+
+% X axis completes the right-handed frame: x = y × z
+x_axis = cross(y_axis, z_axis);
+x_axis = x_axis / norm(x_axis);
+
+% Recompute Z to clean rounding errors
+z_axis = cross(x_axis, y_axis);
+z_axis = z_axis / norm(z_axis);
+
+% Form rotation matrix based on axis
+R_release = [x_axis, y_axis, z_axis]; % World Frame
+R_release = R * R_release; % Apply rotation to Base Frame
+
+%% 4. Compute Inverse Kinematics for release configuration
+
+% Create a GIK object using UR5 rigidBodyTree and 3 contraint variables
+gik = generalizedInverseKinematics('RigidBodyTree', robot, 'ConstraintInputs', {'position','orientation','jointbounds'});
+
+% Create position constraint based on release position (section 1)
+posConst = constraintPositionTarget('tcp_offset');
+posConst.TargetPosition = releasePos;
+
+% Create orientation constraint based on TCP orientation at release point (section 3)
+orientConst = constraintOrientationTarget('tcp_offset');
+orientConst.TargetOrientation = rotm2quat(R_release);
+
+% Create joint constraint based on joint limits (section 1)
+jointConst = constraintJointBounds(robot);
+jointConst.Bounds = [q_min', q_max'];
+
+% Compute Inverse Kinematics solution based on above constraints
+[q_release, solutionInfo] = gik(qStart, posConst, orientConst, jointConst);
+
+% Check if solution was found
+if solutionInfo.ExitFlag <= 0
+    status = 20;
+    output = status;
+    return;
+end
+
+if q_release(6) < -pi
+    q_release(6) = q_release(6) + 2*pi;
+end
+if q_release(6) > pi
+    q_release(6) = q_release(6) - 2*pi;
+end
+
+for i = 1:6
+    if q_release(i) < q_min(i)
+        q_release(i) = q_min(i);
+    end
+    if q_release(i) > q_max(i)
+        q_release(i) = q_max(i);
+    end
+end
+
+
+
+computedRPos = tform2trvec(getTransform(robot, q_release, 'tcp_offset'));
+p_hom = [computedRPos(:); 1];   
+computedRtcp = R2W * p_hom;    
+
+releasePosDiff = norm(releasePosition - computedRtcp(1:3));
+
+if releasePosDiff > 0.001
+    status = status + 10000 * round(releasePosDiff*1000);
+end
+if releasePosDiff > 0.005
+    status = 21;
+    output = status;
+    return
+end
+
+
+%% 5. Compute joint velocity at release point
+
+% Compute Jacobian for release point
+[~,~,J] = kinUR5(q_release);
+Jv = J(1:3, :); % Grab velocity part of Jacobian
+
+% Compute initial joint velocities (these might be slightly wrong because of pseudoinverse)
+qd_release_init = pinv(Jv) * (releaseVelocity * dir);
+
+% Project initial guess onto the direction vector to ensure TCP travels in the correct direction
+% Note: this is a tradeoff, if the initial guess was slightly off, projecting it to the correct
+% direction will lead to a slightly lower TCP velocity than desired (5 degree error would correspond
+% to 0.4% loss in speed and 15 degree error would be 3.4% loss)
+qd_release = pinv(Jv) * (dir * (dir' * (Jv*qd_release_init)));
+
+% Check calculated release velocity
+v_release = Jv * qd_release;
+speed_release = norm(v_release);
+speedDiff = 1 - speed_release / releaseVelocity;
+if speedDiff > 0.001
+    status = status + 1000 * round(speedDiff*100);
+end
+if speedDiff > 0.03
+    status = 22;
+    output = status;
+    return
+end
+
+
+%% 6. Generate lead-up trajectory in joint space
+
+% Compute amount of points needed to satisfy control frequencyuency and lead-up time (section 1)
+numLead = round(leadTime * frequency + 1);
+
+% Generate points spaced equaly in time
+lead_points = linspace(0, leadTime, numLead);
+
+% Generate lead-up trajectory using Cubic Polynomial from qStart to q_release
+[q_traj, qd_traj] = cubicpolytraj([qStart; q_release]', [0 leadTime], lead_points, 'VelocityBoundary',[zeros(6,1) qd_release]);
+
+% Joint limit check
+for i = 1:size(q_traj,2)
+    q_current = q_traj(:, i); 
+    
+    if any(q_current < q_min | q_current > q_max)
+        
+        status = 23;
+        output = status;
+        
+        return
+    end
+end
+
+
+%% 7. Generate follow-through manually
+
+% Compute amount of points needed to satisfy control frequencyuency and follow time (section 1)
+numFollow = round(followTime * frequency);
+
+% Preallocate matrices
+q_follow = zeros(6, numFollow);
+qd_follow = zeros(6, numFollow);
+
+% Define previous joint position
+q_prev = q_release(:);
+
+% Limit enforcement check
+isEnforced = 0;
+
+% Loop for each point in follow-through trajectory
+for i = 1:numFollow
+
+    % Calculate desired velocity at current point
+    decc = 1 - i/numFollow;
+    v_desired = decc * releaseVelocity * dir;
+
+    % Compute velocity Jacobian for previous point
+    [~,~,J] = kinUR5(q_prev');
+    Jv = J(1:3, :);
+
+    % Compute joint velocity
+    qd_temp = pinv(Jv) * v_desired;
+
+    % Update joint position
+    q_next = q_prev + qd_temp * dt;
+
+
+    % Enforce joint limits
+    for j = 1:6
+        if q_next(j) < q_min(j)
+            q_next(j) = q_min(j);
+            qd_temp(j) = 0;
+            isEnforced = 1;
+        end
+        if q_next(j) > q_max(j)
+            q_next(j) = q_max(j);
+            qd_temp(j) = 0;
+            isEnforced = 1;
+        end
+    end
+
+    % Store in matrices
+    q_follow(:,i) = q_next;
+    qd_follow(:,i) = qd_temp;
+
+    q_prev = q_next;
+
+end
+
+% Limit enforcement check
+if isEnforced == 1
+    status = status + 100;
+end
+
+
+%% 8. Combine trajectories
+
+q_traj = [q_traj, q_follow];
+qd_traj = [qd_traj, qd_follow];
+
+%% 9. TCP constraint safety check
+
+% Check that TCP is within limits at each point
+for i = 1:size(q_traj,2)
+    [tcp_pos, ~, ~] = kinUR5(q_traj(:,i)');
+    tcp_pos = transformPosition(tcp_pos', R2W);
+    if tcp_pos(1) < x_min || tcp_pos(1) > x_max || ...
+       tcp_pos(2) < y_min || tcp_pos(2) > y_max || ...
+       tcp_pos(3) < z_min || tcp_pos(3) > z_max
+       status = 24;
+    end
+
+    % disp(i);          % [diagnostic] shows tcp pos at each point
+    % disp(tcp_pos);
+
+end
+
+%% Output
+
+q = rad2deg(q_traj);
+qd = qd_traj;
+
+output = [status];
+
+for i = 1:size(qd,2)
+    for y = 1:6
+        output(end+1) = qd(y,i);
+    end
+end
+
+end
+
+
+%% Helper functions
+
+function p_out = transformPosition(p_in, T)
+    p_out = zeros(1, size(p_in,2));
+
+    % Only position part for now (3D)
+    if length(p_in) >= 3
+        p = [p_in(1:3) 1];  % homogeneous
+        res = zeros(1,4);
+        for i = 1:4
+            for j = 1:4
+                res(i) = res(i) + T(i,j) * p(j);
+            end
+        end
+        p_out(1:3) = res(1:3);
+    end
+end
+
+function [p,R,J] = kinUR5(q)
+% Generated using UR5__symkin_o_Tool.m provided by Inigo Iturrate
+% q : Joint angles (6x1) [rad]
+% p : TCP position (3x1) [m]
+% R : TCP rotation (3x3)
+% J : Jacobian     (6x6)
+
+q1=q(:,1); q2=q(:,2); q3=q(:,3); q4=q(:,4); q5=q(:,5); q6=q(:,6);
+t2=cos(q1); t3=cos(q2); t4=cos(q3); t5=cos(q4); t6=cos(q5); t7=cos(q6);
+t8=sin(q1); t9=sin(q2); t10=sin(q3); t11=sin(q4); t12=sin(q5); t13=sin(q6);
+t14=t3.*t4; t15=t2.*t6; t16=t3.*t10; t17=t4.*t9; t18=t2.*t12; t19=t6.*t8; t20=t9.*t10; t21=t8.*t12; t22=-t2;
+t35=t2.*t3.*(1.7e+1./4.0e+1); t36=t3.*t8.*(1.7e+1./4.0e+1); t40=t2.*1.092e-1; t41=t8.*1.092e-1;
+t23=-t15; t24=t8.*t20; t25=-t20; t26=t2.*t14; t27=t2.*t16; t28=t2.*t17; t29=t8.*t14; t30=t2.*t20; t31=t8.*t16;
+t32=t8.*t17; t34=t20.*t22; t37=-t35; t38=t14.*(4.9e+1./1.25e+2); t39=t20.*(4.9e+1./1.25e+2); t42=t16+t17;
+t56=t15.*2.523e-1; t57=t19.*2.523e-1; t33=-t29; t43=-t38; t44=t24.*(4.9e+1./1.25e+2); t45=t14+t25;
+t46=t26.*(4.9e+1./1.25e+2); t47=t27.*(4.9e+1./1.25e+2); t48=t28.*(4.9e+1./1.25e+2); t49=t29.*(4.9e+1./1.25e+2);
+t50=t30.*(4.9e+1./1.25e+2); t51=t31.*(4.9e+1./1.25e+2); t52=t32.*(4.9e+1./1.25e+2); t53=t5.*t42; t54=t11.*t42;
+t58=t27+t28; t59=t31+t32; t63=t26+t34; t55=-t46; t60=t5.*t45; t61=t11.*t45; t64=t24+t33; t65=t5.*t58;
+t66=t11.*t58; t67=t5.*t59; t68=t11.*t59; t69=t5.*t63; t70=t11.*t63; t75=t53.*9.47e-2; t72=t5.*t64;
+t73=t11.*t64; t76=t61.*9.47e-2; t77=t65.*9.47e-2; t78=t66.*9.47e-2; t79=t67.*9.47e-2; t80=t68.*9.47e-2;
+t83=t69.*9.47e-2; t84=t70.*9.47e-2; t88=t53+t61; t92=t65+t70; t98=-t6.*(t66-t69); t101=t12.*(t66-t69);
+t102=t12.*(t54-t60).*2.523e-1; t74=-t73; t81=-t78; t82=-t80; t85=t72.*9.47e-2; t86=t73.*9.47e-2;
+t90=t12.*t88; t93=t68+t72; t104=t21+t98; t106=t19+t101; t107=t12.*t92.*2.523e-1; t111=t101.*2.523e-1;
+t87=-t85; t91=-t90; t95=t67+t74; t96=t6.*t93; t97=t12.*t93; t112=t37+t41+t50+t55+t57+t77+t84+t111;
+t103=t18+t96; t105=t23+t97; t108=t97.*2.523e-1;
+p = [t112;-t36-t40+t44-t49-t56+t79-t86+t108;t9.*(-1.7e+1./4.0e+1)-t16.*(4.9e+1./1.25e+2)-t17.*(4.9e+1./1.25e+2)+t54.*9.47e-2-t60.*9.47e-2-t90.*2.523e-1+8.916e-2];
+if nargout > 1; R = reshape([-t13.*t92+t7.*t104,-t13.*t95-t7.*t103,-t13.*(t54-t60)+t6.*t7.*t88,-t7.*t92-t13.*t104,-t7.*t95+t13.*t103,-t7.*(t54-t60)-t6.*t13.*t88,t106,t105,t91],[3,3]); end
+if nargout > 2; t110 = t12.*t95.*2.523e-1; J = reshape([t36+t40-t44+t49+t56-t79+t86-t108,t112,0.0,0.0,0.0,1.0,t47+t48+t81+t83+t107+t2.*t9.*(1.7e+1./4.0e+1),t51+t52+t82+t87+t110+t8.*t9.*(1.7e+1./4.0e+1),t3.*(-1.7e+1./4.0e+1)+t39+t43+t75+t76+t102,t8,t22,0.0,t47+t48+t81+t83+t107,t51+t52+t82+t87+t110,t39+t43+t75+t76+t102,t8,t22,0.0,t81+t83+t107,t82+t87+t110,t75+t76+t102,t8,t22,0.0,t21.*(-2.523e-1)+t6.*(t66-t69).*2.523e-1,t18.*2.523e-1+t96.*2.523e-1,t6.*t88.*(-2.523e-1),t92,t95,t54-t60,0.0,0.0,0.0,t106,t105,t91],[6,6]); end
+end
