@@ -5,46 +5,59 @@ releasePosition = [input(1:3)];
 yaw             = input(4);
 pitch           = input(5);
 releaseVelocity = input(6);
-leadTime        = input(7);
+% leadTime        = input(7);
 followTime      = input(8);
 frequency       = input(9);
-qStart          = [input(10:15)];
+% qStart          = [input(10:15)];
 transformW2R    = [input(16:19); 
                    input(20:23); 
                    input(24:27); 
                    input(28:31)];
 
+
 %% 1. Parameters
 
+% Initialize variables
 status = 100000;
-qStart = deg2rad([qStart]);
+qStart = deg2rad([-90, -90, -70, 0, 90, 0]);
+jointAcceleration = 7;
+dt = 1 / frequency; % Delta time; duration of each time step (s)
 
-% Joint limits (1x6 deg)
-q_min = [-160 -180 -145 -100 65 -360];
-q_max = [ 25 0 0 90 105 360];
+% Set joint limits
+q_min = [-160 -180 -145 -100  65 -360];
+q_max = [  25    0    0   90 105  360];
 
+% Apply offset for IK solution
+IKoffset = [20 20 15 15 15 5];
+
+q_min_IK = deg2rad(q_min + IKoffset);
+q_max_IK = deg2rad(q_max - IKoffset);
+
+% Apply offset for safety checks
 safetyOffset = 5;
 
 q_min = deg2rad(q_min + safetyOffset);
 q_max = deg2rad(q_max - safetyOffset);
 
-% TCP limits in world frame (m)
+% Set TCP limits in world frame (m)
 x_min = 0.02; x_max = 2;
 y_min = 0.16; y_max = 0.62;
 z_min = 0.19; z_max = 2;
 
-dt = 1 / frequency; % Delta time; duration of each time step (s)
+% Transform desired release point to base frame
+releasePos = transformPosition(releasePosition, transformW2R); 
 
-releasePos = transformPosition(releasePosition, transformW2R); % Release position in base frame
+% Extract rotation and translation part from W2R transform
+R = transformW2R(1:3,1:3);
+t = transformW2R(1:3,4);
 
-R = transformW2R(1:3,1:3);  % Rotation part of transformW2R transform
-t = transformW2R(1:3,4);    % Translation part of transformW2R transform
-% Base frame to world frame transform
+% Calculate R2W transform based on W2R
 R2W = [R'  -R'*t;
        0 0 0 1];
 
 %% 2. Load and Calibrate UR5 Model
 
+% Load UR5 robot with gravity
 robot = loadrobot("universalUR5","DataFormat","row");  
 robot.DataFormat = 'row';
 robot.Gravity = [0 0 -9.81];
@@ -60,7 +73,7 @@ tcp = rigidBody('tcp_offset');
 offset = trvec2tform([0 0 0.17]);  % meters
 setFixedTransform(tcp.Joint, offset);
 
-% Attach it to the last link (tool0 or end-effector link)
+% Attach it to the last link (tool0)
 addBody(robot, tcp, robot.BodyNames{end});
 
 %% 3. Compute TCP orientation
@@ -99,22 +112,25 @@ R_release = R * R_release; % Apply rotation to Base Frame
 %% 4. Compute Inverse Kinematics for release configuration
 
 % Create a GIK object using UR5 rigidBodyTree and 3 contraint variables
-gik = generalizedInverseKinematics('RigidBodyTree', robot, 'ConstraintInputs', {'position','orientation','jointbounds'});
+gik = generalizedInverseKinematics('RigidBodyTree', robot, 'ConstraintInputs', {'jointbounds','position','orientation'});
 
-% Create position constraint based on release position (section 1)
+% Create joint constraint based on joint limits with heavy offset to push solution towards center of limits
+jointConst = constraintJointBounds(robot);
+jointConst.Bounds = [q_min_IK', q_max_IK'];
+jointConst.Weights = [500, 500, 500, 500, 500, 500]; % All joint constraint weighted heavily to enforce limits
+
+% Create position constraint based on release position
 posConst = constraintPositionTarget('tcp_offset');
 posConst.TargetPosition = releasePos;
+posConst.Weights = 50; % Position weighted more than orientation to push solution to correct release point
 
-% Create orientation constraint based on TCP orientation at release point (section 3)
+% Create orientation constraint based on TCP orientation at release point
 orientConst = constraintOrientationTarget('tcp_offset');
 orientConst.TargetOrientation = rotm2quat(R_release);
-
-% Create joint constraint based on joint limits (section 1)
-jointConst = constraintJointBounds(robot);
-jointConst.Bounds = [q_min', q_max'];
+orientConst.Weights = 1; % Orientation weighted very low as to give IK more space for solution
 
 % Compute Inverse Kinematics solution based on above constraints
-[q_release, solutionInfo] = gik(qStart, posConst, orientConst, jointConst);
+[q_release, solutionInfo] = gik(qStart, jointConst, posConst, orientConst);
 
 % Check if solution was found
 if solutionInfo.ExitFlag <= 0
@@ -123,6 +139,7 @@ if solutionInfo.ExitFlag <= 0
     return;
 end
 
+% Ensure wrist3 does not rotate unneccessarily
 if q_release(6) < -pi
     q_release(6) = q_release(6) + 2*pi;
 end
@@ -130,6 +147,7 @@ if q_release(6) > pi
     q_release(6) = q_release(6) - 2*pi;
 end
 
+% Clip any joint outside limits
 for i = 1:6
     if q_release(i) < q_min(i)
         q_release(i) = q_min(i);
@@ -139,14 +157,13 @@ for i = 1:6
     end
 end
 
-
-
-computedRPos = tform2trvec(getTransform(robot, q_release, 'tcp_offset'));
+% Calculate error, i.e. how far is solution position from desired release point
+[computedRPos, ~, ~] = kinUR5(q_release);
 p_hom = [computedRPos(:); 1];   
-computedRtcp = R2W * p_hom;    
-
+computedRtcp = R2W * p_hom;  
 releasePosDiff = norm(releasePosition - computedRtcp(1:3));
 
+% Set status based on error calculation
 if releasePosDiff > 0.001
     status = status + 10000 * round(releasePosDiff*1000);
 end
@@ -159,20 +176,24 @@ end
 
 %% 5. Compute joint velocity at release point
 
-% Compute Jacobian for release point
+% Calculate Jacobian and extract velocity portion
 [~,~,J] = kinUR5(q_release);
-Jv = J(1:3, :); % Grab velocity part of Jacobian
+Jv = J(1:3, :); 
 
-% Compute initial joint velocities (these might be slightly wrong because of pseudoinverse)
-qd_release_init = pinv(Jv) * (releaseVelocity * dir);
+% Create weighted Jacobian such that wrist2 is more expensive to use
+W_diag = [1, 1, 1, 1, 5, 1]; 
+W_inv = diag(1 ./ W_diag);
+J_weighted_inv = W_inv * Jv' / (Jv * W_inv * Jv');
 
-% Project initial guess onto the direction vector to ensure TCP travels in the correct direction
-% Note: this is a tradeoff, if the initial guess was slightly off, projecting it to the correct
-% direction will lead to a slightly lower TCP velocity than desired (5 degree error would correspond
-% to 0.4% loss in speed and 15 degree error would be 3.4% loss)
-qd_release = pinv(Jv) * (dir * (dir' * (Jv*qd_release_init)));
+% Calculate initial velocities for joints
+qd_release_init = J_weighted_inv * (releaseVelocity * dir);
 
-% Check calculated release velocity
+% Project onto direction vector to ensure trajectory and scale to ensure speed
+factor = (dir' * (Jv * qd_release_init)); 
+scaling = releaseVelocity / factor;      
+qd_release = qd_release_init * scaling; 
+
+% Check calculated release velocity, set status based on error
 v_release = Jv * qd_release;
 speed_release = norm(v_release);
 speedDiff = 1 - speed_release / releaseVelocity;
@@ -188,28 +209,49 @@ end
 
 %% 6. Generate lead-up trajectory in joint space
 
-% Compute amount of points needed to satisfy control frequencyuency and lead-up time (section 1)
-numLead = round(leadTime * frequency + 1);
+% Find the highest joint velocity required at release
+maxJointVelocity = max(qd_release);
 
-% Generate points spaced equaly in time
-lead_points = linspace(0, leadTime, numLead);
+% Calculate global leadTime necessary to hit target velocity with given acceleration
+leadTime = maxJointVelocity / jointAcceleration;
 
-% Generate lead-up trajectory using Cubic Polynomial from qStart to q_release
-[q_traj, qd_traj] = cubicpolytraj([qStart; q_release]', [0 leadTime], lead_points, 'VelocityBoundary',[zeros(6,1) qd_release]);
+% Calculate global points needed for lead trajectory
+numLeadMax = ceil(leadTime * frequency);
 
-% Joint limit check
-for i = 1:size(q_traj,2)
-    q_current = q_traj(:, i); 
-    
-    if any(q_current < q_min | q_current > q_max)
-        
-        status = 23;
-        output = status;
-        
-        return
+% Initialize matrices
+q_lead = zeros(6, numLeadMax);
+qd_lead = zeros(6, numLeadMax);
+
+% Loop each joint
+for i = 1:6
+
+    % Set leadTime and points for specific joint
+    leadTime = qd_release(i) / jointAcceleration;
+    numLead = ceil(leadTime * frequency);
+
+    % Reset qi_prev to release position
+    qi_prev = q_release(i);
+
+    % Loop through global points
+    for j = 1:numLeadMax
+
+        % Set change in velocity needed for next point
+        deltaVelocity = max((1 - j / numLead), 0);
+
+        % Calculate velocity at next point
+        qdi_temp = deltaVelocity * qd_release(i);
+
+        % Calculate joint position at next point
+        qi_next = qi_prev - qdi_temp * dt;
+
+        % Update matrices with found point (working from release towards start)
+        q_lead(i, numLeadMax+1-j) = qi_next;
+        qd_lead(i, numLeadMax+1-j) = qdi_temp;
+
+        % Set qi_prev to next point
+        qi_prev = qi_next;
     end
 end
-
 
 %% 7. Generate follow-through manually
 
@@ -274,8 +316,11 @@ end
 
 %% 8. Combine trajectories
 
-q_traj = [q_traj, q_follow];
-qd_traj = [qd_traj, qd_follow];
+q_release_col = q_release(:);
+qd_release_col = qd_release(:);
+
+q_traj = [q_lead, q_release_col, q_follow];
+qd_traj = [qd_lead, qd_release_col, qd_follow];
 
 %% 9. TCP constraint safety check
 
@@ -289,9 +334,6 @@ for i = 1:size(q_traj,2)
        status = 24;
     end
 
-    % disp(i);          % [diagnostic] shows tcp pos at each point
-    % disp(tcp_pos);
-
 end
 
 %% Output
@@ -299,7 +341,7 @@ end
 q = rad2deg(q_traj);
 qd = qd_traj;
 
-output = [status];
+output = [status, q_traj(1)'];
 
 for i = 1:size(qd,2)
     for y = 1:6
