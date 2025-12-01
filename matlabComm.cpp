@@ -8,8 +8,9 @@
 
 std::vector<double> callMatlab(std::vector<double> input) {
     
+    std::cout << "Starting matlab script..." << std::endl;
     std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr = matlab::engine::startMATLAB();
-
+    
     matlab::data::ArrayFactory factory;
 
     std::vector<size_t> dims = {1, static_cast<size_t>(input.size())};
@@ -22,8 +23,8 @@ std::vector<double> callMatlab(std::vector<double> input) {
 
     std::vector<matlab::data::Array> functionInput({arrayInput});
 
-    matlabPtr->eval(u"addpath('..')");
-    
+    matlabPtr->eval(u"addpath('/home/noahv/Documents/MATLAB')");
+    std::cout << "test" << std::endl;
     matlab::data::TypedArray<double> result = matlabPtr->feval(u"throwCalc", functionInput);
 
     std::cout << "finished matlab script" << std::endl;
@@ -57,6 +58,8 @@ std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw,
 
     dataToSend.push_back(excelName);
 
+    std::cout << "Created data succesfully!" << std ::endl;
+
     return dataToSend;
 }
 
@@ -64,6 +67,7 @@ std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw,
 
 std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabResult, double& statusCode, std::vector<double>& qStart){
     
+    std::cout << "Sorting matlab data..." << std::endl;
     std::vector<std::vector<double>> sortedJointPos;
 
     statusCode = matlabResult[0];  // Save the qStart

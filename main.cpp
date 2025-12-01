@@ -15,10 +15,14 @@ int main() {
     int tableNumber = 1;
     double frequency = 125;     // Hz
     double followTime = 0.5;    // In seconds
-    std::vector<std::vector<double>> transformW2R;
+    std::vector<std::vector<double>> transformW2R = {
+                     { 0.3839,  0.9234, 0.0000, -0.4980},
+                     {-0.9234,  0.3839, 0.0012,  0.0906},
+                     { 0.0011, -0.0005, 1.0000, -0.0311},
+                     {0, 0, 0, 1}};
     double excelName = 11092001;
     bool calculationIsDone = false;
-    bool calibrationIsDone = false;
+    bool calibrationIsDone = true;
 
     cv::Mat imgTest;
     cv::Mat imgTestUndist;
@@ -48,7 +52,7 @@ int main() {
         switch (programState) {
 
             case 0: // Default menu
-                std::cout << "What would you like to do?\n\n" << " 1. Calculate trajectory \n 2. Throw the ball \n 3. Calibrate/settings \n 4. Manual control \n Exit program" << std::endl;
+                std::cout << "What would you like to do?\n\n" << " 1. Calculate trajectory \n 2. Throw the ball \n 3. Calibrate/settings \n 4. Manual control \n 5. Exit program" << std::endl;
 
                 std::cin >> userInputInt;
                 programState = userInputInt;    // Go to user selected case
