@@ -253,6 +253,14 @@ for i = 1:6
     end
 end
 
+% Check lead-up is within joint limits
+if any(qd_lead(1,:) > q_max || qd_lead(1,:) < q_min)
+    status = 23;
+    output = status;
+    return
+end
+
+
 %% 7. Generate follow-through manually
 
 % Compute amount of points needed to satisfy control frequencyuency and follow time (section 1)
