@@ -28,7 +28,7 @@ struct Vec {
 
 class Trajectory {
 public:
-    static TrajResult trajMinVelocity(const Vec& worldReleasePos, const Vec& worldTarget); // World frame, in millimeters
+    static TrajResult trajMinVelocity(const std::vector<double> worldReleasePos, const Vec& worldTarget); // World frame, in millimeters
     static TrajResult trajSetAngle(double pitch, const Vec& worldReleasePos, const Vec& worldTarget); // Pitch in radians from x-axis
 
     static Vec worldToBase(const Vec& worldVec);

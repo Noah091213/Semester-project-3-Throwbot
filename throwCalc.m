@@ -5,14 +5,12 @@ releasePosition = [input(1:3)];
 yaw             = input(4);
 pitch           = input(5);
 releaseVelocity = input(6);
-% leadTime        = input(7);
-followTime      = input(8);
-frequency       = input(9);
-% qStart          = [input(10:15)];
-transformW2R    = [input(16:19); 
-                   input(20:23); 
-                   input(24:27); 
-                   input(28:31)];
+followTime      = input(7);
+frequency       = input(8);
+transformW2R    = [input(9:13); 
+                   input(14:17); 
+                   input(18:21); 
+                   input(22:25)];
 
 
 %% 1. Parameters

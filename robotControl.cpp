@@ -10,8 +10,6 @@
 
 using namespace ur_rtde;
 
-
-
     // Constructor (connects automatically)
     robotControl::robotControl(std::string ip, std::vector<std::vector<double>> transformW2R) {
 
@@ -38,15 +36,11 @@ using namespace ur_rtde;
 
     } 
 
-
-
     // Destructor (automatically disconnects if still connected)
     robotControl::~robotControl() {
         Gripper::bye();
         disconnect();
     }
-
-
 
     // Manually disconnect
     void robotControl::disconnect() {
@@ -62,17 +56,25 @@ using namespace ur_rtde;
         }
     }
 
-
-
-    // Send multiple speedJ commands (vector of vectors)
-    void robotControl::speedJ(const std::vector<std::vector<double>>& qd, double a, double dt, double leadTime) {
+    // Throw command (vector of vectors)
+    void robotControl::throwing(const std::vector<std::vector<double>>& qd, std::vector<double> qStart, double dt, double followTime) {
         if (!rtde_control) {
             throw std::runtime_error("[Robot Error] SpeedJ failed. Not connected to robot.");
         }
 
+        std::cout << "[Robot Info] Preparing to throw..." << std::endl;
+        std::cout << "[Robot Info] Moving to starting position." << std::endl;
+
+        rtde_control->moveJ(qStart, 0.5, 0.5);
+
+        std::cout << "[Robot Info] Starting position reached. Executing throw in 500ms." << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
         std::cout << "[Robot Info] Sending " << qd.size() << " speedJ commands." << std::endl;
     
-        int count = 0;
+        double a = 8.0; // acceleration
+        int count = 0; // command counter
+        int releaseIndex = qd.size() - static_cast<int>(round(followTime * freq)); // index to release gripper
 
         for (const auto& speeds : qd) {
             auto start = std::chrono::high_resolution_clock::now();
@@ -81,7 +83,14 @@ using namespace ur_rtde;
             count++;
 
             // Print joint positions
-            if (count % 25 == 0) {
+            if (count % 10 == 0) {
+                std::vector<double> q = rtde_receive->getActualQ();
+                std::cout << "[Robot Info] Actual q " << count << ": ";
+                for (int i = 0; i < q.size(); ++i) {
+                    std::cout << (q[i] * (180/M_PI)) << " ";
+                }
+                std::cout << std::endl;
+            } else if (count > releaseIndex - 10 && count < releaseIndex + 10) {
                 std::vector<double> q = rtde_receive->getActualQ();
                 std::cout << "[Robot Info] Actual q " << count << ": ";
                 for (int i = 0; i < q.size(); ++i) {
@@ -91,7 +100,7 @@ using namespace ur_rtde;
             }
 
             // Release point
-            if (count == leadTime * freq + 1) {
+            if (count == releaseIndex) {
                 std::vector<double> q = rtde_receive->getActualQ();
                 std::cout << "[Robot Info] Release at q " << count << ": ";
                 for (int i = 0; i < q.size(); ++i) {
@@ -113,8 +122,6 @@ using namespace ur_rtde;
 
     }
 
-
-
     // Send single speedJ command (vector)
     void robotControl::speedJ(const std::vector<double>& qd, double a, double t){
         if (!rtde_control) {
@@ -126,8 +133,20 @@ using namespace ur_rtde;
         rtde_control->stopJ(5.0);   // 5 rad/s deceleration
 
     }
-
-
+    
+    // Pick up ball
+    void robotControl::ballPickup(){
+        std::cout << "[Robot Info] Picking up ball..." << std::endl;
+        rtde_control->moveJ({-0.5524, -1.3533, -1.7579, -1.5160, 1.5622, 0.0012}, 0.5, 0.5);
+        Gripper::home();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        rtde_control->moveJ({-0.5524, -1.3678, -1.9516, -1.3081, 1.5622, 0.0012}, 0.2, 0.2);
+        Gripper::grip();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        rtde_control->moveJ({-0.5524, -1.3533, -1.7579, -1.5160, 1.5622, 0.0012}, 0.2, 0.2);
+        std::cout << "[Robot Info] Ball picked up." << std::endl;
+        home();
+    }
 
     // MoveJ to joint position
     void robotControl::moveJ(const std::vector<double>& q, double v, double a, bool wait) {
@@ -138,7 +157,6 @@ using namespace ur_rtde;
         rtde_control->moveJ(q, v, a, !wait);
 
     }
-
 
     // Move to home position
     void robotControl::home() {
@@ -151,7 +169,6 @@ using namespace ur_rtde;
         rtde_control->moveJ(homePosition, 1.05, 1.4);
     }
 
-
     // Get current joint positions
     std::vector<double> robotControl::getJointPositions() {
         if (!rtde_receive) {
@@ -159,8 +176,6 @@ using namespace ur_rtde;
         }  
         return rtde_receive->getActualQ();
     } 
-
-
 
     // Get current tool position in world frame
     std::vector<double> robotControl::getToolPosition() {
@@ -176,44 +191,3 @@ using namespace ur_rtde;
         std::cout << std::endl;
         return toolPosW;
     }
-
-
-
-    // Helper: Get viable IK solution within joint limits
-    std::vector<double> robotControl::getViableIK(std::vector<double> position) {
-        try {
-            // Get current joint positions
-            std::vector<double> qCurrent = rtde_receive->getActualQ();
-
-            // Compute IK using seed qCurrent
-            std::vector<double> qSolution = rtde_control->getInverseKinematics(position, qCurrent);
-
-            // Check joint limits
-            if (isWithinLimits(qSolution)) {
-                return qSolution;
-            } else {
-                std::cerr << "[Robot Error] IK solution outside joint limits!" << std::endl;
-                return {}; // empty vector = no valid solution
-            }
-        } catch (const std::exception& e) {
-            std::cerr << "[Robot Error] IK computation failed: " << e.what() << std::endl;
-            return {};
-        }
-
-    }
-
-
-
-    // Helper: Check if joint positions are within limits
-    bool robotControl::isWithinLimits(std::vector<double> q) {
-        for (size_t i = 0; i < q.size(); ++i) {
-            if (q[i] < q_min[i] || q[i] > q_max[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-
-
