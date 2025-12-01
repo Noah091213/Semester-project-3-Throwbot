@@ -80,7 +80,7 @@ int Gripper::connectGripper(){
 
     std::cout << "[Gripper Info] Connected to server!" << std::endl;
 
-    command("home()");
+    home();
 
     return 0;
 }
