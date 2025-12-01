@@ -10,7 +10,7 @@
 
 class robotControl {
 public:
-    robotControl(std::string ip = "192.168.100.11",
+    robotControl(std::string ip = "192.168.1.11",
                  std::vector<std::vector<double>> transformW2R = {{
                      { 0.3839,  0.9234, 0.0000, -0.4980},
                      {-0.9234,  0.3839, 0.0012,  0.0906},
@@ -20,11 +20,13 @@ public:
 
     void disconnect();
 
-    void speedJ(const std::vector<std::vector<double>>& qd, double a, double dt, double leadTime);
+    void throwing(const std::vector<std::vector<double>>& qd, std::vector<double> qStart, double dt, double followTime);
     void speedJ(const std::vector<double>& qd, double a, double t);
 
     void moveJ(const std::vector<double>& worldPosition, double v = 1.05, double a = 1.4, bool wait = true);
     void home();
+
+    void ballPickup();
 
     std::vector<double> getJointPositions();
     std::vector<double> getToolPosition();
@@ -34,14 +36,11 @@ private:
     std::vector<double> q_min = {-2.79253, -3.14159, -2.53073, -1.74533, 1.13446, -6.28319};
     std::vector<double> q_max = {0.43633, 0.0, 0.0, 1.57080, 1.83260, 6.28319};
 
-    std::vector<double> homePosition = {-1.5708, -0.6981, -1.3090, -1.0472, 1.5708, 0.0};
+    std::vector<double> homePosition = {-1.5708, -0.8727, -1.5708, -0.3491, 1.5708, 0};
 
     std::vector<std::vector<double>> transformW2R;
     std::string robot_ip;
 
     std::unique_ptr<ur_rtde::RTDEControlInterface> rtde_control;
     std::unique_ptr<ur_rtde::RTDEReceiveInterface> rtde_receive;
-
-    std::vector<double> getViableIK(std::vector<double> position);
-    bool isWithinLimits(std::vector<double> q);
 };
