@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.12.1)  1 DEC 2025 19:21
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.12.1)  1 DEC 2025 20:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -505,51 +505,55 @@ l.83 	\clearpage
 
 ] (./01_introduction.tex
 Chapter 1.
-) (./02_theory.tex
+) (./02_machinevision.tex
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
 l.1 \chapter
-            {Theory} [1
+            {Machine Vision} [1
 
 
 
 ]
 Chapter 2.
-) (./03_hardware.tex [2
+) (./03_trajectoryplanning.tex [2
 
 ]
 Chapter 3.
-) (./04_software.tex [3
+) (./04_robotcontrol.tex [3
 
-]
+] [4]
 Chapter 4.
-) (./05_evaluation.tex [4
+) (./05_datacollection.tex [5
 
-]
+] [6]
 Chapter 5.
-) (./06_discussion.tex [5
+) (./06_evaluation.tex [7
 
 ]
 Chapter 6.
-) (./07_conclusion.tex [6
+) (./07_discussion.tex [8
 
 ]
 Chapter 7.
-) (./08_references.tex [7
+) (./08_conclusion.tex [9
 
 ]
 Chapter 8.
-) (./A_taskdistribution.tex [8
+) (./09_references.tex [10
+
+]
+Chapter 9.
+) (./A_taskdistribution.tex [11
 
 ]
 Appendix A.
-) (./B_code.tex [9
+) (./B_code.tex [12
 
 ]
 Appendix B.
-) [10
+) [13
 
 ] (./main.aux)
  ***********
@@ -557,22 +561,22 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: EC3154676D3A3F9CB6EA952EBA6BF742;1527.
+(rerunfilecheck)             Checksum: C56B663F73923A3307339F417DB40979;2298.
  ) 
 Here is how much of TeX's memory you used:
- 10642 strings out of 474222
- 161715 string characters out of 5748733
- 1929975 words of memory out of 5000000
- 32690 multiletter control sequences out of 15000+600000
- 588209 words of font info for 71 fonts, out of 8000000 for 9000
+ 10669 strings out of 474222
+ 162275 string characters out of 5748733
+ 1930975 words of memory out of 5000000
+ 32704 multiletter control sequences out of 15000+600000
+ 591012 words of font info for 73 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,6n,79p,267b,481s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/t
 exlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-Output written on main.pdf (13 pages, 65057 bytes).
+Output written on main.pdf (16 pages, 69693 bytes).
 PDF statistics:
- 151 PDF objects out of 1000 (max. 8388607)
- 130 compressed objects within 2 object streams
- 27 named destinations out of 1000 (max. 500000)
- 113 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 194 PDF objects out of 1000 (max. 8388607)
+ 170 compressed objects within 2 object streams
+ 36 named destinations out of 1000 (max. 500000)
+ 161 words of extra memory for PDF output out of 10000 (max. 10000000)
 

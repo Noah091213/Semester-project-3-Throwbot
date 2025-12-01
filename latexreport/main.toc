@@ -3,12 +3,18 @@
 \contentsline {section}{\numberline {1.2}Problem Definition}{1}{section.1.2}%
 \contentsline {section}{\numberline {1.3}Constraints \& Limitations}{1}{section.1.3}%
 \contentsline {section}{\numberline {1.4}System Overview}{1}{section.1.4}%
-\contentsline {chapter}{\numberline {2}Theory}{2}{chapter.2}%
-\contentsline {chapter}{\numberline {3}Hardware}{3}{chapter.3}%
-\contentsline {chapter}{\numberline {4}Software}{4}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Evaluation}{5}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Discussion}{6}{chapter.6}%
-\contentsline {chapter}{\numberline {7}Conclusion}{7}{chapter.7}%
-\contentsline {chapter}{\numberline {8}References}{8}{chapter.8}%
-\contentsline {chapter}{\numberline {A}Distribution of tasks}{9}{appendix.A}%
-\contentsline {chapter}{\numberline {B}Code}{10}{appendix.B}%
+\contentsline {chapter}{\numberline {2}Machine Vision}{2}{chapter.2}%
+\contentsline {chapter}{\numberline {3}Trajectory Planning}{3}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Physics}{3}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Kinematics}{4}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}MatLab Communication}{4}{subsection.3.2.1}%
+\contentsline {chapter}{\numberline {4}Robot Control}{5}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Gripper}{5}{section.4.1}%
+\contentsline {section}{\numberline {4.2}UR5}{6}{section.4.2}%
+\contentsline {chapter}{\numberline {5}Data Collection}{7}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Evaluation}{8}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Discussion}{9}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Conclusion}{10}{chapter.8}%
+\contentsline {chapter}{\numberline {9}References}{11}{chapter.9}%
+\contentsline {chapter}{\numberline {A}Distribution of tasks}{12}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Code}{13}{appendix.B}%
