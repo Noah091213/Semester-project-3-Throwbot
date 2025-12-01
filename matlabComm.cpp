@@ -34,7 +34,7 @@ std::vector<double> callMatlab(std::vector<double> input) {
 
 
 
-std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw, double pitch, double releaseVel, double followTime, double frequency, std::vector<std::vector<double>> transformW2R) {
+std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw, double pitch, double releaseVel, double followTime, double frequency, std::vector<std::vector<double>> transformW2R, double excelName) {
     std::vector<double> dataToSend;
 
     std::cout << "Preparing data..." << std::endl;
@@ -54,6 +54,8 @@ std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw,
             dataToSend.push_back(transformW2R[i][y]);
         }
     }
+
+    dataToSend.push_back(excelName);
 
     return dataToSend;
 }
