@@ -20,6 +20,17 @@ int main() {
     bool calculationIsDone = false;
     bool calibrationIsDone = false;
 
+    cv::Mat imgTest;
+    cv::Mat imgTestUndist;
+    cv::Mat imgTestRectified;
+
+    Vec centerTarget;
+    Vec centerTargetWorldFrame;
+
+    TrajResult traj;
+    std::vector<double> matlabDataToSend;
+    std::vector<double> matlabDataRecieved;
+
     std::vector<std::vector<double>> calculatedTrajectory;
     double statusCode;
     std::vector<double> qStart; 
@@ -37,7 +48,7 @@ int main() {
         switch (programState) {
 
             case 0: // Default menu
-                std::cout << "What would you like to do?\n\n" << " 1. Calculate trajectory \n 2. Throw the ball \n 3. Calibrate/settings \n 4. Manual control \n Exit program" std::endl;
+                std::cout << "What would you like to do?\n\n" << " 1. Calculate trajectory \n 2. Throw the ball \n 3. Calibrate/settings \n 4. Manual control \n Exit program" << std::endl;
 
                 std::cin >> userInputInt;
                 programState = userInputInt;    // Go to user selected case
@@ -48,26 +59,26 @@ int main() {
             case 1: // Calculate trajectory
                 
                 if (calibrationIsDone != true) { // If calibration is not done, return to menu
-                    std::cout << "Calibration is not done, please calibrate first!"
+                    std::cout << "Calibration is not done, please calibrate first!" << std::endl;
                     programState = 0;
                     break;
                 }
 
                 // take a fresh picture of the target, then undistort and rectify it
-                cv::Mat imgTest = Vision::grabSingleImage();
-                cv::Mat imgTestUndist = Vision::undistortImage(imgTest, tableNumber);
-                cv::Mat imgTestRectified = Vision::rectifyImage(imgTestUndist, tableNumber);
+                imgTest = Vision::grabSingleImage();
+                imgTestUndist = Vision::undistortImage(imgTest, tableNumber);
+                imgTestRectified = Vision::rectifyImage(imgTestUndist, tableNumber);
 
                 // Find a circular object and calculate the center point to aim for (the center of the target)
-                Vec centerTarget = Vision::findCircularObject(imgTestRectified, 50, 30, 170, 180);
+                centerTarget = Vision::findCircularObject(imgTestRectified, 50, 30, 170, 180);
                 
                 // Find the coordinates for the center target in world frame
-                Vec centerTargetWorldFrame = Vision::tableToWorld(centerTarget);
+                centerTargetWorldFrame = Vision::tableToWorld(centerTarget);
 
                 // Calculate the trajectory needed
-                TrajResult traj = Trajectory::trajMinVelocity(worldReleasePos, centerTargetWorldFrame);
+                traj = Trajectory::trajMinVelocity(worldReleasePos, centerTargetWorldFrame);
                 
-                std::vector<double> matlabDataToSend;
+                
 
                 if (traj.hasHigh) {
                     matlabDataToSend = createDataToSend(worldReleasePos, traj.highArc.yaw, traj.highArc.pitch, traj.highArc.velocity, followTime, frequency, transformW2R, excelName);
@@ -78,9 +89,9 @@ int main() {
                     programState = 0;
                     break;
                 }
-                std::vector<double> matlabDataRecieved = callMatlab(matlabDataToSend);
+                matlabDataRecieved = callMatlab(matlabDataToSend);
 
-                calculatedTrajectory = sortedMatlabData(matlabDataRecieved, statusCode, qStart);
+                calculatedTrajectory = sortMatlabResult(matlabDataRecieved, statusCode, qStart);
 
                 if (statusCode > 100) { // Status code will be much larger if calculation was successful
                     calculationIsDone = true;   // Allows throwing the ball
@@ -95,12 +106,12 @@ int main() {
 
             case 2: // Throw
                 if (calculationIsDone != true){ // If calculation is not done, return to menu
-                    std::cout << "A trajectory has not been calculated, please plan the throw before throwing!"
-                    prgramState = 0;
+                    std::cout << "A trajectory has not been calculated, please plan the throw before throwing!" << std::endl;
+                    programState = 0;
                     break;
                 }
 
-                robot.throwing(calculatedTrajectory, qStart, excelName);
+                robot.throwing(calculatedTrajectory, qStart, 0.008, followTime);
 
                 programState = 0;
             break;
@@ -149,7 +160,7 @@ int main() {
                         programState = 0;
 
                     break;
-                }
+                };
 
             break;
 
@@ -158,7 +169,7 @@ int main() {
             case 5: // Exit program
                 closeProgram = true;
             break;
-        }
+        };
 
 
     }

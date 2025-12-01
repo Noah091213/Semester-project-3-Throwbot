@@ -62,15 +62,15 @@ std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw,
 
 
 
-std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabResult, double &statusCode, std::vector<double> &qStart){
+std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabResult, double& statusCode, std::vector<double>& qStart){
     
     std::vector<std::vector<double>> sortedJointPos;
 
-    &qStart = matlabResult[0];  // Save the qStart
+    statusCode = matlabResult[0];  // Save the qStart
 
     if (matlabResult.size() > 13 && (matlabResult.size()-1)%6 == 0) {
 
-        &statusCode = matlabResult[1], matlabResult[2], matlabResult[3],matlabResult[4], matlabResult[5], matlabResult[5]; // Save the statuscode
+        qStart = { matlabResult[1], matlabResult[2], matlabResult[3],matlabResult[4], matlabResult[5], matlabResult[5] }; // Save the statuscode
 
         for (int i = 2; i < (matlabResult.size()/6+1); i++) {   // Loop through the remaining parts of the matlab data vector and store the data for joint positions
             std::cout << "index to sort: " << i << std::endl;

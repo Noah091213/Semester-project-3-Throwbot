@@ -36,14 +36,14 @@ ANGLES MEASURED FROM X-AXIS:
 
 From x towards y is positive yaw, from x towards z is positive pitch.
 */
-TrajResult Trajectory::trajMinVelocity(const Vec& worldReleasePos, const Vec& worldTarget) {
+TrajResult Trajectory::trajMinVelocity(const std::vector<double> worldReleasePos, const Vec& worldTarget) {
     TrajResult result{};
     result.hasSetAngle = false;
 
     const double g = 9810.0; // mm/s²
 
-    double dx = worldTarget.x - worldReleasePos.x;
-    double dy = worldTarget.y - worldReleasePos.y;
+    double dx = worldTarget.x - worldReleasePos[0];
+    double dy = worldTarget.y - worldReleasePos[1];
 
     // Horizontal distance on the XY plane
     double horizDist = sqrt(dx*dx + dy*dy);
@@ -52,7 +52,7 @@ TrajResult Trajectory::trajMinVelocity(const Vec& worldReleasePos, const Vec& wo
     double yaw = atan2(dy, dx);
 
     // Relative vertical distance input for formula
-    double h = worldReleasePos.z - worldTarget.z;
+    double h = worldReleasePos[2] - worldTarget.z;
 
     // Straight-line distance from start to target
     double R = sqrt(horizDist*horizDist + h*h);
