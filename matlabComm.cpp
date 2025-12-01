@@ -24,7 +24,7 @@ std::vector<double> callMatlab(std::vector<double> input) {
 
     matlabPtr->eval(u"addpath('..')");
     
-    matlab::data::TypedArray<double> result = matlabPtr->feval(u"throwFunction", functionInput);
+    matlab::data::TypedArray<double> result = matlabPtr->feval(u"throwCalc", functionInput);
 
     std::cout << "finished matlab script" << std::endl;
     std::vector<double> vecResult(result.begin(), result.end());
@@ -34,7 +34,7 @@ std::vector<double> callMatlab(std::vector<double> input) {
 
 
 
-std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw, double pitch, double releaseVel, double leadTime, double followTime, double frequency, std::vector<double> qStart, std::vector<std::vector<double>> transformW2R) {
+std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw, double pitch, double releaseVel, double followTime, double frequency, std::vector<std::vector<double>> transformW2R) {
     std::vector<double> dataToSend;
 
     std::cout << "Preparing data..." << std::endl;
@@ -46,13 +46,8 @@ std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw,
     dataToSend.push_back(yaw);
     dataToSend.push_back(pitch);
     dataToSend.push_back(releaseVel);
-    dataToSend.push_back(leadTime);
     dataToSend.push_back(followTime);
     dataToSend.push_back(frequency);
-
-    for (int i = 0; i < 6 ; i++) {
-        dataToSend.push_back(qStart[i]);
-    }
     
     for (int i = 0; i < 4; i++) {
         for (int y = 0; y < 4; y++) {
@@ -65,30 +60,29 @@ std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw,
 
 
 
-std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabResult){
-    std::vector<std::vector<double>> sortedMatlabData;
+std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabResult, double &statusCode, std::vector<double> &qStart){
+    
+    std::vector<std::vector<double>> sortedJointPos;
 
+    &qStart = matlabResult[0];  // Save the qStart
 
-    if (matlabResult.size() > 7 && (matlabResult.size()-1)%6 == 0) {
-        
-        std::vector<double> tmp1 = {matlabResult[0]};
-        sortedMatlabData.push_back(tmp1);
-        std::cout << "Check is sorted: " << sortedMatlabData[0][0] << std::endl;
-        std::cout << "input is: " << matlabResult.size() << std::endl;
-        
-        for (int i = 1; i < (matlabResult.size()/6+1); i++) {
+    if (matlabResult.size() > 13 && (matlabResult.size()-1)%6 == 0) {
+
+        &statusCode = matlabResult[1], matlabResult[2], matlabResult[3],matlabResult[4], matlabResult[5], matlabResult[5]; // Save the statuscode
+
+        for (int i = 2; i < (matlabResult.size()/6+1); i++) {   // Loop through the remaining parts of the matlab data vector and store the data for joint positions
             std::cout << "index to sort: " << i << std::endl;
 
             std::vector<double> tmp = { matlabResult[i*6-5], matlabResult[i*6-4], matlabResult[i*6-3],matlabResult[i*6-2], matlabResult[i*6-1], matlabResult[i*6] };
             
-            sortedMatlabData.push_back(tmp);
+            sortedJointPos.push_back(tmp);
         }
 
-        return sortedMatlabData;
+        return sortedJointPos;
 
     } else {
         std::cout << "Result cannot be sorted" << std::endl;
-        return sortedMatlabData;
+        return sortedJointPos;
     }
     
 }
