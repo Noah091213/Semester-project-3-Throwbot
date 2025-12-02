@@ -1,2 +1,6 @@
-build/
+build/CMakeFiles
+build/CMakeCache.txt
+build/cmake_install.cmake
+build/MakeFile
+build/compile_commands.json
 CMakeLists.txt.user
