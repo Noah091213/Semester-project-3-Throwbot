@@ -5,10 +5,17 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Set to local MatLab Roor folder
-set(MATLAB_ROOT /home/noahv/Programs/MatLab)
+# --- CONFIGURATION: MATLAB PATHS ---
+set(MATLAB_ROOT "/home/noahv/Programs/MatLab")
+set(MATLAB_LIB_DIR "/home/noahv/Programs/MatLab/bin/glnxa64")
 
-# Boost (needed by ur_rtde)
+# --- FIX 1: Find System Libraries explicitly ---
+# We must find these BEFORE linking anything else to ensure we get the system versions
+# and not the ones hidden inside the MATLAB folder.
+find_package(CURL REQUIRED)
+find_package(LibXml2 REQUIRED)
+
+# Boost
 find_package(Boost REQUIRED COMPONENTS system thread)
 
 # ur_rtde
@@ -28,7 +35,8 @@ add_executable(${PROJECT_NAME} main.cpp
     matlabComm.hpp matlabComm.cpp
     robotControl.h robotControl.cpp
     linearAlgebra.h linearAlgebra.cpp
-    Gripper.h Gripper.cpp)
+    Gripper.h Gripper.cpp
+)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
@@ -38,21 +46,44 @@ target_include_directories(${PROJECT_NAME}
         ${PYLON_INCLUDE_DIR}
         ${MATLAB_ROOT}/extern/lib/glnxa64
         ${MATLAB_ROOT}/extern/include
+        ${LIBXML2_INCLUDE_DIR} 
+        ${CURL_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
+        # --- GROUP 1: The "Must Load First" (MATLAB ICU) ---
+        # We load these FIRST so that when libxml2 loads later, 
+        # it sees ICU is already present and uses this version.
+        ${MATLAB_LIB_DIR}/libicuuc.so.74
+        ${MATLAB_LIB_DIR}/libicui18n.so.74
+        ${MATLAB_LIB_DIR}/libicudata.so.74
+
+        # --- GROUP 2: The "Must Be System" (Curl & XML) ---
+        # We explicitly link the system versions here.
+        # Because Group 1 is already loaded, these will attempt to bind 
+        # to the MATLAB ICU (which usually works).
+        ${CURL_LIBRARIES}
+        ${LIBXML2_LIBRARIES}
+
+        # --- GROUP 3: The Rest ---
+        ${MATLAB_LIB_DIR}/libmwi18n.so
         ${Boost_LIBRARIES}
         ${OpenCV_LIBS}
         ur_rtde::rtde
         ${PYLON_LIBS}
-        ${OpenCV_LIBS} 
+        
         "${MATLAB_ROOT}/extern/bin/glnxa64/libMatlabEngine.so" 
-        "${MATLAB_ROOT}/extern/bin/glnxa64/libMatlabDataArray.so" dl pthread
+        "${MATLAB_ROOT}/extern/bin/glnxa64/libMatlabDataArray.so" 
+        dl 
+        pthread
 )
 
+# --- RPATH SETTINGS ---
+# We include MATLAB_LIB_DIR for the ICU libs, but the linker has already 
+# resolved Curl to the system path due to the explicit link above.
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    BUILD_WITH_INSTALL_RPATH true
-    INSTALL_RPATH "${MATLAB_ROOT}/extern/bin/glnxa64"
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "${MATLAB_LIB_DIR};${MATLAB_ROOT}/extern/bin/glnxa64;${PYLON_ROOT}/lib"
+    INSTALL_RPATH_USE_LINK_PATH TRUE
 )
-

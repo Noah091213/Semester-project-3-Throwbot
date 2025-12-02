@@ -23,8 +23,8 @@ std::vector<double> callMatlab(std::vector<double> input) {
 
     std::vector<matlab::data::Array> functionInput({arrayInput});
 
-    matlabPtr->eval(u"addpath('/home/noahv/Documents/MATLAB')");
-    std::cout << "test" << std::endl;
+    matlabPtr->eval(u"addpath('..')");
+    
     matlab::data::TypedArray<double> result = matlabPtr->feval(u"throwCalc", functionInput);
 
     std::cout << "finished matlab script" << std::endl;

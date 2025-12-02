@@ -20,7 +20,7 @@ int main() {
                      {-0.9234,  0.3839, 0.0012,  0.0906},
                      { 0.0011, -0.0005, 1.0000, -0.0311},
                      {0, 0, 0, 1}};
-    double excelName = 11092001;
+    double excelName = 1109;
     bool calculationIsDone = false;
     bool calibrationIsDone = true;
 
@@ -39,7 +39,7 @@ int main() {
     double statusCode;
     std::vector<double> qStart; 
 
-    std::vector<double> worldReleasePos = {600, 400, 400}; // XYZ in mm
+    std::vector<double> worldReleasePos = {700, 400, 400}; // XYZ in mm
 
     robotControl robot;
 
@@ -93,9 +93,12 @@ int main() {
                     programState = 0;
                     break;
                 }
+
                 matlabDataRecieved = callMatlab(matlabDataToSend);
 
                 calculatedTrajectory = sortMatlabResult(matlabDataRecieved, statusCode, qStart);
+
+                std::cout << statusCode << std::endl;
 
                 if (statusCode > 100) { // Status code will be much larger if calculation was successful
                     calculationIsDone = true;   // Allows throwing the ball
@@ -115,7 +118,7 @@ int main() {
                     break;
                 }
 
-                robot.throwing(calculatedTrajectory, qStart, 0.008, followTime);
+                //robot.throwing(calculatedTrajectory, qStart, 0.008, followTime);
 
                 programState = 0;
             break;
@@ -123,7 +126,7 @@ int main() {
 
 
             case 3: // Calibrate/settings
-
+                
 
             break;
 
