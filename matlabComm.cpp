@@ -35,21 +35,19 @@ std::vector<double> callMatlab(std::vector<double> input) {
 
 
 
-std::vector<double> createDataToSend(std::vector<double> releasePos, double yaw, double pitch, double releaseVel, double followTime, double frequency, std::vector<std::vector<double>> transformW2R, double excelName) {
-    std::vector<double> dataToSend;
+std::vector<double> createDataToSend(std::vector<double> targetPos, double followTime, double frequency, std::vector<std::vector<double>> transformW2R, double excelName) {
+    std::vector<double> dataToSend; // Create vector for the data to be sent
 
     std::cout << "Preparing data..." << std::endl;
 
-    for (int i = 0 ; i < 3 ; i++) {
-        dataToSend.push_back(releasePos[i]);
-    }
-
-    dataToSend.push_back(yaw);
-    dataToSend.push_back(pitch);
-    dataToSend.push_back(releaseVel);
+    // Add data to vector
+    dataToSend.push_back(targetPos[0]);
+    dataToSend.push_back(targetPos[1]);
+    dataToSend.push_back(targetPos[2]);
     dataToSend.push_back(followTime);
     dataToSend.push_back(frequency);
     
+    // Transform matrix is 4x4 matrix so double for loop to add that
     for (int i = 0; i < 4; i++) {
         for (int y = 0; y < 4; y++) {
             dataToSend.push_back(transformW2R[i][y]);

@@ -80,31 +80,26 @@ int main() {
                 centerTargetWorldFrame = Vision::tableToWorld(centerTarget);
 
                 // Calculate the trajectory needed
-                traj = Trajectory::trajMinVelocity(worldReleasePos, centerTargetWorldFrame);
-                
-                
+                //traj = Trajectory::trajMinVelocity(worldReleasePos, centerTargetWorldFrame);
 
-                if (traj.hasHigh) {
-                    matlabDataToSend = createDataToSend(worldReleasePos, traj.highArc.yaw, traj.highArc.pitch, traj.highArc.velocity, followTime, frequency, transformW2R, excelName);
-                } else if (traj.hasLow) {
-                    matlabDataToSend = createDataToSend(worldReleasePos, traj.lowArc.yaw, traj.lowArc.pitch, traj.lowArc.velocity, followTime, frequency, transformW2R, excelName);
-                } else {
-                    std::cout << "Neither high nor low arc found a trajectory..." << std::endl;
-                    programState = 0;
-                    break;
-                }
+                // Create the vector with all data needed for trajectory planning
+                matlabDataToSend = createDataToSend(centerTargetWorldFrame, followTime, frequency, transformW2R, excelName);
 
+                // Call the matlab script with prepared data
                 matlabDataRecieved = callMatlab(matlabDataToSend);
 
+                // Sort the result from matlab
                 calculatedTrajectory = sortMatlabResult(matlabDataRecieved, statusCode, qStart);
 
+                // Check the status code, mostly for debugging for now
                 std::cout << statusCode << std::endl;
 
-                if (statusCode > 100) { // Status code will be much larger if calculation was successful
+                if (statusCode % 900000000000000 == 1) { // Status code will start with 9 if crash occured, otherwise status code will start with 0 or 1
+                    std::cout << "A major error occured during calculation..." << std::endl;
+                    std::cout << statusCode << std::endl;
+                } else {
                     calculationIsDone = true;   // Allows throwing the ball
                     std::cout << "Calculation is complete and should work!" << std::endl;
-                } else {
-                    std::cout << "A major error occured during calculation..." << std::endl;
                 }
                 programState = 0;   // Returns to main menu after calculation
             break; 
