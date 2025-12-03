@@ -41,7 +41,7 @@ for i = 1:7
         continue
     end
 
-    output = [status, rad2deg(q(:,1))'];
+    output = [status, deg2rad(q(:,1))'];
 
     for j = 1:size(qd,2)
         for y = 1:6
