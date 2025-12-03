@@ -77,7 +77,7 @@ function [status, q, qd] = throwFunction(releasePosition, yaw, pitch, releaseVel
 
 % Initialize variables
 status = 100000;
-jointAcceleration = 7;
+jointAcceleration = 5;
 dt = 1 / frequency; % Delta time; duration of each time step (s)
 q = 0;
 qd = 0;
