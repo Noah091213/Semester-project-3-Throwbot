@@ -36,6 +36,7 @@ add_executable(${PROJECT_NAME} main.cpp
     robotControl.h robotControl.cpp
     linearAlgebra.h linearAlgebra.cpp
     Gripper.h Gripper.cpp
+    dataLog.h dataLog.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
