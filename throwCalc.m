@@ -141,8 +141,8 @@ addBody(robot, tcp, robot.BodyNames{end});
 %% 3. Compute TCP orientation
 
 % Create a normalized vector to indicate direction of throw (World Frame)
-dir_world = [cos(pitch)*(-cos(yaw)); 
-             cos(pitch)*(-sin(yaw)); 
+dir_world = [cos(pitch)*(-cos(-yaw)); 
+             cos(pitch)*(-sin(-yaw)); 
              sin(pitch)];
 dir_world = dir_world / norm(dir_world);
 
