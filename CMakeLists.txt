@@ -5,13 +5,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# --- CONFIGURATION: MATLAB PATHS ---
+# Configure these paths to the users Matlab installation folder
+# ============================================
 set(MATLAB_ROOT "/home/noahv/Programs/MatLab")
 set(MATLAB_LIB_DIR "/home/noahv/Programs/MatLab/bin/glnxa64")
+# ============================================
 
-# --- FIX 1: Find System Libraries explicitly ---
-# We must find these BEFORE linking anything else to ensure we get the system versions
-# and not the ones hidden inside the MATLAB folder.
+# System libraries, needed to avoid conflicts between Matlab Engine and Pylon
 find_package(CURL REQUIRED)
 find_package(LibXml2 REQUIRED)
 
@@ -52,36 +52,28 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        # --- GROUP 1: The "Must Load First" (MATLAB ICU) ---
-        # We load these FIRST so that when libxml2 loads later, 
-        # it sees ICU is already present and uses this version.
+        # Matlab ICU must load first to include the needed chars
         ${MATLAB_LIB_DIR}/libicuuc.so.74
         ${MATLAB_LIB_DIR}/libicui18n.so.74
         ${MATLAB_LIB_DIR}/libicudata.so.74
 
-        # --- GROUP 2: The "Must Be System" (Curl & XML) ---
-        # We explicitly link the system versions here.
-        # Because Group 1 is already loaded, these will attempt to bind 
-        # to the MATLAB ICU (which usually works).
+        # Load system libs to allow Pylon to use instead of system ICU
         ${CURL_LIBRARIES}
         ${LIBXML2_LIBRARIES}
 
-        # --- GROUP 3: The Rest ---
+        # Remaining libs
         ${MATLAB_LIB_DIR}/libmwi18n.so
         ${Boost_LIBRARIES}
         ${OpenCV_LIBS}
         ur_rtde::rtde
         ${PYLON_LIBS}
-        
         "${MATLAB_ROOT}/extern/bin/glnxa64/libMatlabEngine.so" 
         "${MATLAB_ROOT}/extern/bin/glnxa64/libMatlabDataArray.so" 
         dl 
         pthread
 )
 
-# --- RPATH SETTINGS ---
-# We include MATLAB_LIB_DIR for the ICU libs, but the linker has already 
-# resolved Curl to the system path due to the explicit link above.
+# RPATH SETTINGS
 set_target_properties(${PROJECT_NAME} PROPERTIES
     BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH "${MATLAB_LIB_DIR};${MATLAB_ROOT}/extern/bin/glnxa64;${PYLON_ROOT}/lib"

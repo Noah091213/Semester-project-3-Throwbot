@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # 1. Define Paths
 MATLAB_BIN="/home/noahv/Programs/MatLab/bin/glnxa64"
 
