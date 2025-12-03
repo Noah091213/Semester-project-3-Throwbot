@@ -30,6 +30,8 @@ for i = 1:7
 
     [yaw, pitch, velocity] = trajectory(releasePostion, targetPosition);
 
+    fprintf('yaw, pitch, velocity: [%6.3f %6.3f %6.3f]\n', [yaw, pitch, velocity]);
+
     [status, q, qd] = throwFunction(releasePostion, yaw, pitch, velocity, followTime, frequency, transformW2R);
 
     if status < 100
