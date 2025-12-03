@@ -18,7 +18,7 @@ public:
     static cv::Mat rectifyImage(const cv::Mat& undistortedImgage, int tableID);
 
     static Vec findCircularObject(const cv::Mat& rectifiedImage, double cannyThresh, double circleConfidence, int minRadius, int maxRadius); // Table frame
-    static Vec tableToWorld(const Vec& tableVec);
+    static std::vector<double> tableToWorld(const Vec& tableVec);
 };
 
 #endif

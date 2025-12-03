@@ -16,10 +16,10 @@ int main() {
     double frequency = 125;     // Hz
     double followTime = 0.5;    // In seconds
     std::vector<std::vector<double>> transformW2R = {
-                     { 0.3839,  0.9234, 0.0000, -0.4980},
-                     {-0.9234,  0.3839, 0.0012,  0.0906},
-                     { 0.0011, -0.0005, 1.0000, -0.0311},
-                     {0, 0, 0, 1}};
+                     {-0.3840, -0.9233, 0.0005,  0.7021},
+                     { 0.9233, -0.3840, 0.0018, -0.7111},
+                     {-0.0015,  0.0012, 1.0000, -0.0334},
+                     { 0,       0,      0,       1}};
     double excelName = 1109;
     bool calculationIsDone = false;
     bool calibrationIsDone = true;
@@ -29,7 +29,7 @@ int main() {
     cv::Mat imgTestRectified;
 
     Vec centerTarget;
-    Vec centerTargetWorldFrame;
+    std::vector<double> centerTargetWorldFrame;
 
     TrajResult traj;
     std::vector<double> matlabDataToSend;
@@ -91,12 +91,9 @@ int main() {
                 // Sort the result from matlab
                 calculatedTrajectory = sortMatlabResult(matlabDataRecieved, statusCode, qStart);
 
-                // Check the status code, mostly for debugging for now
-                std::cout << statusCode << std::endl;
-
-                if (statusCode % 900000000000000 == 1) { // Status code will start with 9 if crash occured, otherwise status code will start with 0 or 1
+                if (statusCode >= 900000000000000) { // Status code will start with 9 if crash occured, otherwise status code will start with 0 or 1
                     std::cout << "A major error occured during calculation..." << std::endl;
-                    std::cout << statusCode << std::endl;
+                    std::cout << "Error code: " << std::fixed << std::setprecision(0) << statusCode << std::endl;
                 } else {
                     calculationIsDone = true;   // Allows throwing the ball
                     std::cout << "Calculation is complete and should work!" << std::endl;
