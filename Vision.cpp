@@ -280,22 +280,21 @@ Vec Vision::findCircularObject(const cv::Mat& rectifiedImage, double cannyThresh
     // Test code for tuning here
     cv::imwrite("rectifiedImageTestOut.png", rectifiedImage);
     cv::imshow(to_string(cannyThresh) + " " + to_string(circleConfidence) + " " + to_string(minRadius) + " " + to_string(maxRadius), rectifiedImage);
-    cout << "center x table frame: " << center.x << endl;
-    cout << "center y table frame: " << center.y << endl;
-    //cv::waitKey(0);
+    cv::waitKey(0);
+    cv::destroyAllWindows();
 
     return center;
 }
 
-Vec Vision::tableToWorld(const Vec& tableVec) {
+std::vector<double> Vision::tableToWorld(const Vec& tableVec) {
     // 0,0 origin of image is expected to be the opposite table corner of world frame
     // Rotation matrix, rotate 180deg around Z and flip Z (table orientation compared to world)
     cv::Mat R = (cv::Mat_<double>(3,3) <<
-                 0, -1,  0,
-                -1,  0,  0,
-                 0,  0, -1);
+                 0, 1, 0,
+                 1, 0, 0,
+                 0, 0,-1);
     // Translation vector (table dimensions)
-    cv::Mat t = (cv::Mat_<double>(3,1) << 1200, 800, 0);
+    cv::Mat t = (cv::Mat_<double>(3,1) << 0, 0, 0);
 
     Vec P;
 
@@ -306,5 +305,10 @@ Vec Vision::tableToWorld(const Vec& tableVec) {
     P.y = worldVec.at<double>(1,0);
     P.z = worldVec.at<double>(2,0);
 
-    return P;
+    std::vector<double> output = {worldVec.at<double>(0,0), worldVec.at<double>(1,0), worldVec.at<double>(2,0)};
+
+    cout << "center x table frame: " << output[0] << endl;
+    cout << "center y table frame: " << output[1] << endl;
+
+    return output;
 }
