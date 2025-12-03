@@ -34,6 +34,10 @@ for i = 1:7
 
     if status < 100
         errorCode = errorCode + status * max(100 * (i-1), 1);
+        if i == 7
+            output = errorCode;
+            return
+        end
         continue
     end
 
