@@ -72,7 +72,7 @@ using namespace ur_rtde;
 
         std::cout << "[Robot Info] Sending " << qd.size() << " speedJ commands." << std::endl;
     
-        double a = 8.0; // acceleration
+        double a = 9.0; // acceleration
         int count = 0; // command counter
         int releaseIndex = qd.size() - static_cast<int>(round(followTime * freq)); // index to release gripper
 
@@ -90,7 +90,7 @@ using namespace ur_rtde;
                     std::cout << (q[i] * (180/M_PI)) << " ";
                 }
                 std::cout << std::endl;
-            } else if (count > releaseIndex - 10 && count < releaseIndex + 10) {
+            } else if (count > releaseIndex - 10 && count < releaseIndex + 20) {
                 std::vector<double> q = rtde_receive->getActualQ();
                 std::cout << "[Robot Info] Actual q " << count << ": ";
                 for (int i = 0; i < q.size(); ++i) {
@@ -106,7 +106,15 @@ using namespace ur_rtde;
                 for (int i = 0; i < q.size(); ++i) {
                     std::cout << (q[i] * (180/M_PI)) << " ";
                 }
+                std::vector<double> qdRelease = rtde_receive->getActualQd();
+                std::cout << "[Robot Info] qd at q " << count << ": ";
+                for (int i = 0; i < qdRelease.size(); ++i) {
+                    std::cout << (qdRelease[i] * (180/M_PI)) << " ";
+                }
                 std::cout << std::endl;
+                getToolPosition();
+            }
+            if (count == releaseIndex - 5) {
                 std::thread([]() {
                     Gripper::release();  // runs independently
                 }).detach();
@@ -139,13 +147,12 @@ using namespace ur_rtde;
         std::cout << "[Robot Info] Picking up ball..." << std::endl;
         rtde_control->moveJ({-0.5524, -1.3533, -1.7579, -1.5160, 1.5622, 0.0012}, 0.5, 0.5);
         Gripper::home();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         rtde_control->moveJ({-0.5524, -1.3678, -1.9516, -1.3081, 1.5622, 0.0012}, 0.2, 0.2);
         Gripper::grip();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         rtde_control->moveJ({-0.5524, -1.3533, -1.7579, -1.5160, 1.5622, 0.0012}, 0.2, 0.2);
         std::cout << "[Robot Info] Ball picked up." << std::endl;
-        home();
     }
 
     // MoveJ to joint position

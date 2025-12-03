@@ -301,9 +301,9 @@ std::vector<double> Vision::tableToWorld(const Vec& tableVec) {
     cv::Mat pt = (cv::Mat_<double>(3,1) << tableVec.x, tableVec.y, tableVec.z);
     cv::Mat worldVec = R * pt + t;
 
-    P.x = worldVec.at<double>(0,0);
-    P.y = worldVec.at<double>(1,0);
-    P.z = worldVec.at<double>(2,0);
+    worldVec.at<double>(0,0) = worldVec.at<double>(0,0)/1000;
+    worldVec.at<double>(1,0) = worldVec.at<double>(1,0)/1000;
+    worldVec.at<double>(2,0) = worldVec.at<double>(2,0)/1000;
 
     std::vector<double> output = {worldVec.at<double>(0,0), worldVec.at<double>(1,0), worldVec.at<double>(2,0)};
 

@@ -52,7 +52,7 @@ int main() {
         switch (programState) {
 
             case 0: // Default menu
-                std::cout << "What would you like to do?\n\n" << " 1. Calculate trajectory \n 2. Throw the ball \n 3. Calibrate/settings \n 4. Manual control \n 5. Exit program" << std::endl;
+                std::cout << "\nWhat would you like to do?\n\n" << " 1. Calculate trajectory \n 2. Throw the ball \n 3. Calibrate/settings \n 4. Manual control \n 5. Exit program" << std::endl;
 
                 std::cin >> userInputInt;
                 programState = userInputInt;    // Go to user selected case
@@ -75,6 +75,12 @@ int main() {
 
                 // Find a circular object and calculate the center point to aim for (the center of the target)
                 centerTarget = Vision::findCircularObject(imgTestRectified, 50, 30, 170, 180);
+
+                if (centerTarget.x == 0) {
+                    programState = 0;
+                    std::cout << "No target found..." << std::endl;
+                    break;
+                }
                 
                 // Find the coordinates for the center target in world frame
                 centerTargetWorldFrame = Vision::tableToWorld(centerTarget);
@@ -85,6 +91,9 @@ int main() {
                 // Create the vector with all data needed for trajectory planning
                 matlabDataToSend = createDataToSend(centerTargetWorldFrame, followTime, frequency, transformW2R, excelName);
 
+                for (int i = 0; i<matlabDataToSend.size(); i++) {
+                    std::cout << matlabDataToSend[i] << std::endl;
+                }
                 // Call the matlab script with prepared data
                 matlabDataRecieved = callMatlab(matlabDataToSend);
 
@@ -97,6 +106,12 @@ int main() {
                 } else {
                     calculationIsDone = true;   // Allows throwing the ball
                     std::cout << "Calculation is complete and should work!" << std::endl;
+                    std::cout << "Status is: " << statusCode << std::endl;
+                    /*std::cout << "Startin position is: ";
+                    for (int i = 0; i < qStart.size(); i++){
+                        std::cout << qStart[i] << " , ";
+                    }
+                    std::cout << "\n" << std::endl;*/
                 }
                 programState = 0;   // Returns to main menu after calculation
             break; 
@@ -110,7 +125,8 @@ int main() {
                     break;
                 }
 
-                //robot.throwing(calculatedTrajectory, qStart, 0.008, followTime);
+                robot.ballPickup();
+                robot.throwing(calculatedTrajectory, qStart, 0.008, followTime);
 
                 programState = 0;
             break;
@@ -118,8 +134,41 @@ int main() {
 
 
             case 3: // Calibrate/settings
-                
+                std::cout << "\n\nCalibration menu:\n\n" << " 1. Use existing calibration \n 2. Calibrate camera \n 3. Calibrate tabel corners \n 4. Exit to main menu" << std::endl;
+                std::cin >> userInputInt;
 
+                switch (userInputInt) {
+                    case 1:
+
+
+                    break;
+
+                    case 2:
+                        std::cout << "what table number are you calibrating?"
+                        std::cin >> userInputInt;
+
+                        std::cout << "You are calibrating for table " << userInputInt << std::endl;
+                    
+                        Vision::calibrateCam(9, 6 , 35.0, 20, userInputInt);
+
+                    break;
+                        
+                    case 3:
+                        std::cout << "what table number are you calibrating?"
+                        std::cin >> userInputInt;
+
+                        std::cout << "You are calibrating for table " << userInputInt << std::endl;
+                        imgTest = Vision::grabSingleImage();
+                        imgTestUndist = Vision::undistortImage(imgTest, userInputInt);
+                        Vision::calibrateTableCorners(imgTestUndist, userInputInt);
+                        
+                    break;
+
+                    case 4:
+                        programState = 0;
+
+                    break;
+                }
             break;
 
 

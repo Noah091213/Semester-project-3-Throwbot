@@ -27,7 +27,7 @@ std::vector<double> callMatlab(std::vector<double> input) {
     
     matlab::data::TypedArray<double> result = matlabPtr->feval(u"throwCalc", functionInput);
 
-    std::cout << "finished matlab script" << std::endl;
+    std::cout << "finished matlab script\n" << std::endl;
     std::vector<double> vecResult(result.begin(), result.end());
 
     return vecResult;
@@ -56,7 +56,7 @@ std::vector<double> createDataToSend(std::vector<double> targetPos, double follo
 
     dataToSend.push_back(excelName);
 
-    std::cout << "Created data succesfully!" << std ::endl;
+    std::cout << "Created data succesfully!\n" << std ::endl;
 
     return dataToSend;
 }
@@ -72,10 +72,10 @@ std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabRes
 
     if (matlabResult.size() > 13 && (matlabResult.size()-1)%6 == 0) {
 
-        qStart = { matlabResult[1], matlabResult[2], matlabResult[3],matlabResult[4], matlabResult[5], matlabResult[6] }; // Save the qStart
-
+        qStart = { matlabResult[1], matlabResult[2], matlabResult[3], matlabResult[4], matlabResult[5], matlabResult[6] }; // Save the qStart
+        
         for (int i = 2; i < (matlabResult.size()/6+1); i++) {   // Loop through the remaining parts of the matlab data vector and store the data for joint positions
-            std::cout << "index to sort: " << i << std::endl;
+            //std::cout << "index to sort: " << i << std::endl;
 
             std::vector<double> tmp = { matlabResult[i*6-5], matlabResult[i*6-4], matlabResult[i*6-3],matlabResult[i*6-2], matlabResult[i*6-1], matlabResult[i*6] };
             
@@ -85,7 +85,7 @@ std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabRes
         return sortedJointPos;
 
     } else {
-        std::cout << "Result cannot be sorted" << std::endl;
+        std::cout << "Result cannot be sorted\n" << std::endl;
         return sortedJointPos;
     }
     
@@ -101,7 +101,7 @@ void showSortedData(std::vector<std::vector<double>> input) {
         for (int y = 0; y < input[x].size(); y++) {
             std::cout << input[x][y] << std::endl;
         }
-        std::cout << "\nNext position!" << std::endl;
+        std::cout << "\nNext position!\n" << std::endl;
     }
 }
 
