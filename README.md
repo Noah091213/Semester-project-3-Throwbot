@@ -35,7 +35,7 @@ UR-RTDE is a library developed by professors on SDU and is the required library 
 
 ### Installation
 
-Step-by-step guide on how to install and run the project. If changes need to be made and pushed to github use the SSH key instead
+Step-by-step guide on how to install and run the project. 
 
 ```bash
 # Example to download and run
