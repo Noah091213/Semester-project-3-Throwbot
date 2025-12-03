@@ -22,7 +22,7 @@ errorCode = 900000000000000
 for i = 1:7
 
     releasePostion = releasePostions(i, 1:3);
-    positionDifference = norm(releasePostion - targetPosition);
+    positionDifference = norm(releasePostion(1:2) - targetPosition(1:2));
 
     if positionDifference < 0.20
         continue
