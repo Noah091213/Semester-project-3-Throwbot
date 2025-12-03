@@ -1,29 +1,70 @@
 function output = throwCalc(input)
-    
-%% 1. Input extraction
-releasePosition = [input(1:3)];
-yaw             = input(4);
-pitch           = input(5);
-releaseVelocity = input(6);
-followTime      = input(7);
-frequency       = input(8);
-transformW2R    = [input(9:13); 
-                   input(14:17); 
-                   input(18:21); 
-                   input(22:25)];
 
+targetPosition = [input(1:3)];
+followTime = input(4);
+frequency = input(5);
+transformW2R    = [input(6:9); 
+                   input(10:13); 
+                   input(14:17); 
+                   input(18:21)];
+
+releasePostions = [0.35, 0.40, 0.40;
+                  0.50, 0.40, 0.35;
+                  0.45, 0.50, 0.40;
+                  0.50, 0.50, 0.40;
+                  0.40, 0.40, 0.35;
+                  0.35, 0.50, 0.35;
+                  0.40, 0.50, 0.35];
+
+status = 100000;
+errorCode = 900000000000000
+
+for i = 1:7
+
+    releasePostion = releasePostions(i, 1:3);
+    positionDifference = norm(releasePostion - targetPosition);
+
+    if positionDifference < 0.20
+        continue
+    end
+
+    [yaw, pitch, velocity] = trajectory(releasePostion, targetPosition);
+
+    [status, q, qd] = throwFunction(releasePostion, yaw, pitch, velocity, followTime, frequency, transformW2R);
+
+    if status < 100
+        errorCode = errorCode + status * max(100 * (i-1), 1);
+        continue
+    end
+
+    output = [status, q_traj(1)'];
+
+    for j = 1:size(qd,2)
+        for y = 1:6
+            output(end+1) = qd(y,j);
+        end
+    end
+
+end
+
+end
+
+function [status, q, qd] = throwFunction(releasePosition, yaw, pitch, releaseVelocity, followTime, frequency, transformW2R)
 
 %% 1. Parameters
 
 % Initialize variables
 status = 100000;
-qStart = deg2rad([-90, -90, -70, 0, 90, 0]);
 jointAcceleration = 7;
 dt = 1 / frequency; % Delta time; duration of each time step (s)
+q = 0;
+qd = 0;
 
 % Set joint limits
 q_min = [-160 -180 -145 -100  65 -360];
 q_max = [  25    0    0   90 105  360];
+
+qStart = deg2rad((q_min + q_max) / 2);
 
 % Apply offset for IK solution
 IKoffset = [20 20 15 15 15 5];
@@ -38,8 +79,8 @@ q_min = deg2rad(q_min + safetyOffset);
 q_max = deg2rad(q_max - safetyOffset);
 
 % Set TCP limits in world frame (m)
-x_min = 0.02; x_max = 2;
-y_min = 0.16; y_max = 0.62;
+x_min = 0.00; x_max = 1.23;
+y_min = 0.18; y_max = 0.64;
 z_min = 0.19; z_max = 2;
 
 % Transform desired release point to base frame
@@ -52,6 +93,7 @@ t = transformW2R(1:3,4);
 % Calculate R2W transform based on W2R
 R2W = [R'  -R'*t;
        0 0 0 1];
+
 
 %% 2. Load and Calibrate UR5 Model
 
@@ -77,8 +119,8 @@ addBody(robot, tcp, robot.BodyNames{end});
 %% 3. Compute TCP orientation
 
 % Create a normalized vector to indicate direction of throw (World Frame)
-dir_world = [cos(pitch)*cos(yaw);
-             cos(pitch)*sin(yaw);
+dir_world = [cos(pitch)*(-cos(yaw)); 
+             cos(pitch)*(-sin(yaw)); 
              sin(pitch)];
 dir_world = dir_world / norm(dir_world);
 
@@ -107,6 +149,8 @@ z_axis = z_axis / norm(z_axis);
 R_release = [x_axis, y_axis, z_axis]; % World Frame
 R_release = R * R_release; % Apply rotation to Base Frame
 
+
+
 %% 4. Compute Inverse Kinematics for release configuration
 
 % Create a GIK object using UR5 rigidBodyTree and 3 contraint variables
@@ -133,7 +177,6 @@ orientConst.Weights = 1; % Orientation weighted very low as to give IK more spac
 % Check if solution was found
 if solutionInfo.ExitFlag <= 0
     status = 20;
-    output = status;
     return;
 end
 
@@ -159,7 +202,7 @@ end
 [computedRPos, ~, ~] = kinUR5(q_release);
 p_hom = [computedRPos(:); 1];   
 computedRtcp = R2W * p_hom;  
-releasePosDiff = norm(releasePosition - computedRtcp(1:3));
+releasePosDiff = norm(releasePosition - computedRtcp(1:3)');
 
 % Set status based on error calculation
 if releasePosDiff > 0.001
@@ -167,12 +210,12 @@ if releasePosDiff > 0.001
 end
 if releasePosDiff > 0.005
     status = 21;
-    output = status;
     return
 end
 
 
-%% 5. Compute joint velocity at release point
+
+%% 5. Compute joint velocity at release point (Weighted / Soft Lock)
 
 % Calculate Jacobian and extract velocity portion
 [~,~,J] = kinUR5(q_release);
@@ -200,10 +243,8 @@ if speedDiff > 0.001
 end
 if speedDiff > 0.03
     status = 22;
-    output = status;
     return
 end
-
 
 %% 6. Generate lead-up trajectory in joint space
 
@@ -252,12 +293,10 @@ for i = 1:6
 end
 
 % Check lead-up is within joint limits
-if any(qd_lead(1,:) > q_max || qd_lead(1,:) < q_min)
+if any(any(q_lead > q_max' | q_lead < q_min'))
     status = 23;
-    output = status;
     return
 end
-
 
 %% 7. Generate follow-through manually
 
@@ -319,7 +358,6 @@ if isEnforced == 1
     status = status + 100;
 end
 
-
 %% 8. Combine trajectories
 
 q_release_col = q_release(:);
@@ -342,21 +380,13 @@ for i = 1:size(q_traj,2)
 
 end
 
+
 %% Output
 
 q = rad2deg(q_traj);
 qd = qd_traj;
 
-output = [status, q_traj(1)'];
-
-for i = 1:size(qd,2)
-    for y = 1:6
-        output(end+1) = qd(y,i);
-    end
 end
-
-end
-
 
 %% Helper functions
 
@@ -404,4 +434,81 @@ t103=t18+t96; t105=t23+t97; t108=t97.*2.523e-1;
 p = [t112;-t36-t40+t44-t49-t56+t79-t86+t108;t9.*(-1.7e+1./4.0e+1)-t16.*(4.9e+1./1.25e+2)-t17.*(4.9e+1./1.25e+2)+t54.*9.47e-2-t60.*9.47e-2-t90.*2.523e-1+8.916e-2];
 if nargout > 1; R = reshape([-t13.*t92+t7.*t104,-t13.*t95-t7.*t103,-t13.*(t54-t60)+t6.*t7.*t88,-t7.*t92-t13.*t104,-t7.*t95+t13.*t103,-t7.*(t54-t60)-t6.*t13.*t88,t106,t105,t91],[3,3]); end
 if nargout > 2; t110 = t12.*t95.*2.523e-1; J = reshape([t36+t40-t44+t49+t56-t79+t86-t108,t112,0.0,0.0,0.0,1.0,t47+t48+t81+t83+t107+t2.*t9.*(1.7e+1./4.0e+1),t51+t52+t82+t87+t110+t8.*t9.*(1.7e+1./4.0e+1),t3.*(-1.7e+1./4.0e+1)+t39+t43+t75+t76+t102,t8,t22,0.0,t47+t48+t81+t83+t107,t51+t52+t82+t87+t110,t39+t43+t75+t76+t102,t8,t22,0.0,t81+t83+t107,t82+t87+t110,t75+t76+t102,t8,t22,0.0,t21.*(-2.523e-1)+t6.*(t66-t69).*2.523e-1,t18.*2.523e-1+t96.*2.523e-1,t6.*t88.*(-2.523e-1),t92,t95,t54-t60,0.0,0.0,0.0,t106,t105,t91],[6,6]); end
+end
+
+function [yaw, pitch, velocity] = trajectory(releasePosition, targetPosition)
+% TRAJECTORY Finder den minimale starthastighed og de tilhørende vinkler
+% (yaw og pitch) for at ramme et mål.
+%   yaw og pitch returneres nu i RADIANER.
+%
+%   releasePosition: [x_r, y_r, z_r] - Startposition (m)
+%   targetPosition: [x_t, y_t, z_t] - Målposition (m)
+    % --- Konstanter ---
+    g = 9.81; % Tyngdeacceleration (m/s^2)
+    minPitch_deg = 22.5; % Minimum pitch-vinkel (grader, bruges KUN til beregning)
+    
+    % --- Bestem Forskydning ---
+    delta_r = targetPosition - releasePosition;
+    
+    % Horisontal afstand (i xy-planet)
+    R_xy = sqrt(delta_r(1)^2 + delta_r(2)^2);
+    
+    % Vertikal afstand (z-akse)
+    delta_z = delta_r(3); 
+    
+    if R_xy == 0
+        error('Målet er direkte over/under release-positionen, horisontal afstand er nul.');
+    end
+    % --- 1. Bestem Yaw (Resultat i RADIANER) ---
+    % Yaw: 0 rad i -x retning. Positiv mod +y, Negativ mod -y.
+    
+    theta_from_plus_x = atan2(delta_r(2), delta_r(1)); % Vinkel fra +x-aksen
+    
+    % Vinklen fra den NEGATIVE X-akse (wrappet til [-pi, pi])
+    yaw = pi - theta_from_plus_x;
+    yaw = mod(yaw + pi, 2*pi) - pi; % yaw er nu i radianer [-pi, pi]
+    
+    % --- 2. Optimer Pitch og Velocity (Resultat i RADIANER) ---
+    
+    minPitch_rad = deg2rad(minPitch_deg);
+    
+    % Søg efter pitch i intervallet [minPitch, 89.99 grader]
+    pitch_search_rad = linspace(minPitch_rad, deg2rad(89.99), 1000); 
+    
+    v0_squared = zeros(size(pitch_search_rad));
+    
+    for i = 1:length(pitch_search_rad)
+        theta = pitch_search_rad(i);
+        
+        % V0^2 ligningen:
+        % v0^2 = (g * R_xy^2) / (2 * cos(theta)^2 * (R_xy * tan(theta) - delta_z))
+        denominator = 2 * cos(theta)^2 * (R_xy * tan(theta) - delta_z);
+        
+        if denominator > 1e-6 
+            v0_squared(i) = (g * R_xy^2) / denominator;
+        else
+            v0_squared(i) = Inf; 
+        end
+    end
+    
+    % Find den minimale hastighed
+    [min_v0_squared, min_idx] = min(v0_squared);
+    
+    velocity = sqrt(min_v0_squared);
+    
+    % Tildel optimal pitch i radianer
+    pitch = pitch_search_rad(min_idx); 
+    
+    % Håndter kravet om minimum pitch (nu i radianer)
+    if pitch < minPitch_rad
+       pitch = minPitch_rad; % Brug minPitch i radianer
+       
+       % Genberegn hastighed for den påkrævede minimum pitch
+       denominator_min = 2 * cos(pitch)^2 * (R_xy * tan(pitch) - delta_z);
+       if denominator_min > 0
+           velocity = sqrt((g * R_xy^2) / denominator_min);
+       else
+           error('Kan ikke ramme målet med minimum pitch-vinkel.'); 
+       end
+    end
 end
