@@ -35,19 +35,20 @@ UR-RTDE is a library developed by professors on SDU and is the required library 
 
 ### Installation
 
-Step-by-step guide on how to install and run the project. 
+Step-by-step guide on how to install the project. 
 
 ```bash
 # Example to download and run
 git clone https://github.com/Noah091213/Semester-project-3-Throwbot
 nano CMakeLists.txt
 # Edit the path to the Matlab installation folder, in the 2 highlighted sets
-# Save and exit the CMakeLists
+# Save and exit CMakeLists.txt
 cd build
 cmake ..
 make
 nano run.sh
 # Edit path to Matlab folder again, this is necessary to actual run the program with the correct ICU
+# Save and exit run.sh
 
 # Profit!
 ```
@@ -61,4 +62,5 @@ To run the program use the following:
 # To run the program
 cd build
 ./run.sh
+# Profit!
 ```
