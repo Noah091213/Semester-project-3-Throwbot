@@ -32,8 +32,6 @@ for i = 1:7
 
     [status, q, qd] = throwFunction(releasePostion, yaw, pitch, velocity, followTime, frequency, transformW2R);
 
-    disp(status);
-
     if status < 100
         error = error + status * max(100 * (i-1), 1);
         if i == 7
