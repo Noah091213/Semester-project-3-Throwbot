@@ -68,11 +68,11 @@ std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabRes
     std::cout << "Sorting matlab data..." << std::endl;
     std::vector<std::vector<double>> sortedJointPos;
 
-    statusCode = matlabResult[0];  // Save the qStart
+    statusCode = matlabResult[0];  // Save the status code
 
     if (matlabResult.size() > 13 && (matlabResult.size()-1)%6 == 0) {
 
-        qStart = { matlabResult[1], matlabResult[2], matlabResult[3],matlabResult[4], matlabResult[5], matlabResult[5] }; // Save the statuscode
+        qStart = { matlabResult[1], matlabResult[2], matlabResult[3],matlabResult[4], matlabResult[5], matlabResult[6] }; // Save the qStart
 
         for (int i = 2; i < (matlabResult.size()/6+1); i++) {   // Loop through the remaining parts of the matlab data vector and store the data for joint positions
             std::cout << "index to sort: " << i << std::endl;
