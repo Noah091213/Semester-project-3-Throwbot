@@ -53,6 +53,7 @@ for i = 1:7
     qdRelease = qd(:,releaseIndex);
 
     fprintf('Solution found!\n');
+    fprintf('release at q: %.2f\n', releaseIndex);
     fprintf('release pose: [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', qRelease);
     fprintf('release velocity: [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', rad2deg(qdRelease));
 
