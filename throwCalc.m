@@ -17,7 +17,7 @@ releasePostions = [0.35, 0.40, 0.40;
                   0.40, 0.50, 0.35];
 
 status = 100000;
-errorCode = 900000000000000
+error = 900000000000000;
 
 for i = 1:7
 
@@ -32,22 +32,25 @@ for i = 1:7
 
     [status, q, qd] = throwFunction(releasePostion, yaw, pitch, velocity, followTime, frequency, transformW2R);
 
+    disp(status);
+
     if status < 100
-        errorCode = errorCode + status * max(100 * (i-1), 1);
+        error = error + status * max(100 * (i-1), 1);
         if i == 7
-            output = errorCode;
+            output = error;
             return
         end
         continue
     end
 
-    output = [status, q_traj(1)'];
+    output = [status, q(1)'];
 
     for j = 1:size(qd,2)
         for y = 1:6
             output(end+1) = qd(y,j);
         end
     end
+    return
 
 end
 
