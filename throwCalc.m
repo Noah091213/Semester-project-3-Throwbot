@@ -22,6 +22,9 @@ error = 900000000000000;
 for i = 1:7
 
     releasePostion = releasePostions(i, 1:3);
+
+    fprintf('Testing release position: [%6.3f %6.3f %6.3f]\n', releasePostion);
+
     positionDifference = norm(releasePostion(1:2) - targetPosition(1:2));
 
     if positionDifference < 0.20
@@ -34,6 +37,8 @@ for i = 1:7
 
     [status, q, qd] = throwFunction(releasePostion, yaw, pitch, velocity, followTime, frequency, transformW2R);
 
+    fprintf('status: %.2f\n', status);
+
     if status < 100
         error = error + status * max(100 * (i-1), 1);
         if i == 7
@@ -42,6 +47,15 @@ for i = 1:7
         end
         continue
     end
+
+    releaseIndex = size(q,2)-round(followTime*frequency);
+    qRelease = q(:,releaseIndex);
+    qdRelease = qd(:,releaseIndex);
+
+    fprintf('Solution found!\n');
+    fprintf('release pose: [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', qRelease);
+    fprintf('release velocity: [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', qdRelease);
+
 
     output = [status, deg2rad(q(:,1))'];
 
