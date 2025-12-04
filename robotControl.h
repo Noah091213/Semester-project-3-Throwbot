@@ -20,7 +20,7 @@ public:
 
     void disconnect();
 
-    void throwing(const std::vector<std::vector<double>>& qd, std::vector<double> qStart, double dt, double followTime);
+    void throwing(const std::vector<std::vector<double>>& qd, std::vector<double> qStart, double dt, double followTime, std::string fileName);
     void speedJ(const std::vector<double>& qd, double a, double t);
 
     void moveJ(const std::vector<double>& worldPosition, double v = 1.05, double a = 1.4, bool wait = true);

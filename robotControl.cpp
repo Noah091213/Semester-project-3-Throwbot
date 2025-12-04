@@ -7,6 +7,8 @@
 #include <ur_rtde/rtde_control_interface.h>
 #include <ur_rtde/rtde_receive_interface.h>
 #include "robotControl.h"
+#include "dataLog.h"
+
 
 using namespace ur_rtde;
 
@@ -57,7 +59,7 @@ using namespace ur_rtde;
     }
 
     // Throw command (vector of vectors)
-    void robotControl::throwing(const std::vector<std::vector<double>>& qd, std::vector<double> qStart, double dt, double followTime) {
+    void robotControl::throwing(const std::vector<std::vector<double>>& qd, std::vector<double> qStart, double dt, double followTime, std::string fileName) {
         if (!rtde_control) {
             throw std::runtime_error("[Robot Error] SpeedJ failed. Not connected to robot.");
         }
@@ -75,6 +77,9 @@ using namespace ur_rtde;
         double a = 9.0; // acceleration
         int count = 0; // command counter
         int releaseIndex = qd.size() - static_cast<int>(round(followTime * freq)); // index to release gripper
+
+        std::vector<std::vector<double>> qLog;
+        std::vector<std::vector<double>> qdLog;
 
         for (const auto& speeds : qd) {
             auto start = std::chrono::high_resolution_clock::now();
@@ -132,6 +137,27 @@ using namespace ur_rtde;
         }
 
         rtde_control->speedStop(5.0);   // 5 rad/s deceleration
+
+        while(true) {
+            std::cout << "Do you want to save the data? (y/n)" << std::endl;
+            std::string userInput;
+            std::cin >> userInput;
+
+            if (userInput == "y" || userInput == "Y") {
+
+                std::cout << "Saving data in " << fileName << std::endl;
+                dataLog::logData(qLog, qdLog, fileName);
+                break;
+
+            } else if (userInput == "n" || userInput == "N"){
+
+                std::cout << "Discarding data..." << std::endl;
+                break;
+                
+            } else {
+                std::cout << "Please input either y or n..." << std::endl;
+            }
+        }
 
     }
 

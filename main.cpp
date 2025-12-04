@@ -5,6 +5,7 @@
 #include "robotControl.h"
 #include "matlabComm.hpp"
 #include "Trajectory.h"
+#include "dataLog.h"
 
 int main() {
 
@@ -20,7 +21,9 @@ int main() {
                      { 0.9233, -0.3840, 0.0018, -0.7111},
                      {-0.0015,  0.0012, 1.0000, -0.0334},
                      { 0,       0,      0,       1}};
-    double excelName = 1109;
+    
+    double excelNumber = 0;
+    std::string excelName = "";
     bool calculationIsDone = false;
     bool calibrationIsDone = true;
 
@@ -85,11 +88,13 @@ int main() {
                 // Find the coordinates for the center target in world frame
                 centerTargetWorldFrame = Vision::tableToWorld(centerTarget);
 
-                // Calculate the trajectory needed
-                //traj = Trajectory::trajMinVelocity(worldReleasePos, centerTargetWorldFrame);
+                excelNumber = dataLog::createFileNumber();
+                excelName = "DataLogs/" + std::to_string(static_cast<int>(excelNumber)) + ".csv";
+
+                std::cout << "Excel number: " << std::fixed << std::setprecision(0) << excelNumber << " Excel name: " << excelName << std::endl;
 
                 // Create the vector with all data needed for trajectory planning
-                matlabDataToSend = createDataToSend(centerTargetWorldFrame, followTime, frequency, transformW2R, excelName);
+                matlabDataToSend = createDataToSend(centerTargetWorldFrame, followTime, frequency, transformW2R, excelNumber);
 
                 for (int i = 0; i<matlabDataToSend.size(); i++) {
                     std::cout << matlabDataToSend[i] << std::endl;
@@ -126,7 +131,7 @@ int main() {
                 }
 
                 robot.ballPickup();
-                robot.throwing(calculatedTrajectory, qStart, 0.008, followTime);
+                robot.throwing(calculatedTrajectory, qStart, 0.008, followTime, excelName);
 
                 programState = 0;
             break;
@@ -144,7 +149,7 @@ int main() {
                     break;
 
                     case 2:
-                        std::cout << "what table number are you calibrating?"
+                        std::cout << "what table number are you calibrating?" << std::endl;
                         std::cin >> userInputInt;
 
                         std::cout << "You are calibrating for table " << userInputInt << std::endl;
@@ -154,7 +159,7 @@ int main() {
                     break;
                         
                     case 3:
-                        std::cout << "what table number are you calibrating?"
+                        std::cout << "what table number are you calibrating?" << std::endl;
                         std::cin >> userInputInt;
 
                         std::cout << "You are calibrating for table " << userInputInt << std::endl;
