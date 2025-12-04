@@ -11,8 +11,8 @@ transformW2R    = [input(6:9);
                    input(18:21)];
 fileNumber = input(22);
 
-releasePositions = [0.35, 0.40, 0.40;
-                  0.50, 0.40, 0.35;
+releasePositions = [0.40, 0.45, 0.35;
+                  0.50, 0.45, 0.35;
                   0.45, 0.50, 0.40;
                   0.50, 0.50, 0.40;
                   0.40, 0.40, 0.35;
@@ -428,28 +428,35 @@ q = rad2deg(q_traj);
 qd = qd_traj;
 
 %% Data log
+% 1. Beregn hvor bred matricen skal være. 
+% Vi skal bruge plads til alle elementer i q_traj (6 * antal kolonner)
+num_traj_elements = numel(q_traj); 
 
-data = zeros(3, 6*size(q_traj, 1));
+% Vi tæller hvor meget metadata du har i række 1 (ca. 12 felter)
+num_meta_elements = 12; 
 
-data(1,1:3) = releasePosition';
-data(1,4) = yaw;
-data(1,5) = pitch;
-data(1,6) = releaseVelocity;
-data(1,7) = followTime;
-data(1,8) = leadTimeMax;
-data(1,9) = status;
-data(1,10:12) = targetPosition;
+% Matricens bredde skal være den største af de to, så der er plads
+total_width = max(num_traj_elements, num_meta_elements);
 
-for i = 1:size(q_traj,1)
-    offset = (i-1) * 6;
-    data(2, 1+offset : 6+offset) = q_traj(:, 1);
-    data(3, 1+offset : 6+offset) = qd_traj(:, 1);
-end
+% 2. Opret data matricen fyldt med nuller
+data = zeros(3, total_width);
 
+% 3. Udfyld Række 1: Metadata
+% Jeg samler dine værdier i en vektor for overskuelighed
+% (Husk at tjekke om targetPosition også skal transponeres som releasePosition)
+meta_data = [releasePosition', yaw, pitch, releaseVelocity, followTime, leadTimeMax, status, targetPosition];
+data(1, 1:length(meta_data)) = meta_data;
+
+% 4. Udfyld Række 2 og 3: Trajectories
+% q_traj(:) folder matricen ud til en lang kolonne-vektor (tager kolonne 1, så 2, osv.)
+% Vi transponerer med (') for at gøre det til en række
+data(2, 1:num_traj_elements) = q_traj(:)';
+data(3, 1:num_traj_elements) = qd_traj(:)';
+
+% 5. Gem til fil
 filename = sprintf('%d.csv', fileNumber);
 fullFilePath = fullfile('DataLogs', filename);
 writematrix(data, fullFilePath);
-
 end
 
 %% Helper functions
