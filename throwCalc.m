@@ -444,8 +444,9 @@ for i = 1:size(q_traj,1)
     data(3, 1+offset : 6+offset) = qd_traj(:, 1);
 end
 
-filename = sprintf('/DataLogs/%d.csv', fileNumber);
-writematrix(data, filename);
+filename = sprintf('%d.csv', fileNumber);
+fullFilePath = fullfile('DataLogs', filename);
+writematrix(data, fullFilePath);
 
 end
 
