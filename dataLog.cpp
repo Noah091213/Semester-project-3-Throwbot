@@ -61,7 +61,7 @@ void dataLog::logData(std::vector<std::vector<double>> q, std::vector<std::vecto
     }
 
     output_file.close();
-    std::cout << "Data successfully logged to rows 4 and 5 of " << filename << " using the robust method." << std::endl;
+    std::cout << "Data successfully logged to file: " << filename << std::endl;
 }
 
 double dataLog::createFileNumber() {

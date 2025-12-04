@@ -444,7 +444,7 @@ data = zeros(3, total_width);
 % 3. Udfyld Række 1: Metadata
 % Jeg samler dine værdier i en vektor for overskuelighed
 % (Husk at tjekke om targetPosition også skal transponeres som releasePosition)
-meta_data = [releasePosition', yaw, pitch, releaseVelocity, followTime, leadTimeMax, status, targetPosition];
+meta_data = [releasePosition, yaw, pitch, releaseVelocity, followTime, leadTimeMax, status, targetPosition];
 data(1, 1:length(meta_data)) = meta_data;
 
 % 4. Udfyld Række 2 og 3: Trajectories

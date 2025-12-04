@@ -74,7 +74,7 @@ using namespace ur_rtde;
 
         std::cout << "[Robot Info] Sending " << qd.size() << " speedJ commands." << std::endl;
     
-        double a = 9.0; // acceleration
+        double a = 5.0; // acceleration
         int count = 0; // command counter
         int releaseIndex = qd.size() - static_cast<int>(round(followTime * freq)); // index to release gripper
 
@@ -137,6 +137,10 @@ using namespace ur_rtde;
         }
 
         rtde_control->speedStop(5.0);   // 5 rad/s deceleration
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        home();
 
         while(true) {
             std::cout << "Do you want to save the data? (y/n)" << std::endl;
