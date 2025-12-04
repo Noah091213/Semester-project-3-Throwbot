@@ -79,22 +79,24 @@ using namespace ur_rtde;
         for (const auto& speeds : qd) {
             auto start = std::chrono::high_resolution_clock::now();
 
-            rtde_control->speedJ(speeds, a, dt - 0.002);
-            count++;
+            std::vector<double> qCurrent = rtde_receive->getActualQ();
+            std::vector<double> qdCurrent = rtde_receive->getActualQd();
+
+            // Log q and qd
+            qLog.push_back(qCurrent);
+            qdLog.push_back(qdCurrent);
 
             // Print joint positions
             if (count % 10 == 0) {
-                std::vector<double> q = rtde_receive->getActualQ();
                 std::cout << "[Robot Info] Actual q " << count << ": ";
-                for (int i = 0; i < q.size(); ++i) {
-                    std::cout << (q[i] * (180/M_PI)) << " ";
+                for (int i = 0; i < qCurrent.size(); ++i) {
+                    std::cout << (qCurrent[i] * (180/M_PI)) << " ";
                 }
                 std::cout << std::endl;
-            } else if (count > releaseIndex - 10 && count < releaseIndex + 20) {
-                std::vector<double> q = rtde_receive->getActualQ();
+            } else if (count > releaseIndex - 10 && count < releaseIndex + 10) {
                 std::cout << "[Robot Info] Actual q " << count << ": ";
-                for (int i = 0; i < q.size(); ++i) {
-                    std::cout << (q[i] * (180/M_PI)) << " ";
+                for (int i = 0; i < qCurrent.size(); ++i) {
+                    std::cout << (qCurrent[i] * (180/M_PI)) << " ";
                 }
                 std::cout << std::endl;
             }
@@ -119,6 +121,9 @@ using namespace ur_rtde;
                     Gripper::release();  // runs independently
                 }).detach();
             }
+
+            rtde_control->speedJ(speeds, a, dt - 0.002);
+            count++;
 
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;
