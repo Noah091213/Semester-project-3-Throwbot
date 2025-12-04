@@ -1,6 +1,6 @@
 function output = throwCalc(input)
 
-fprintf('[Matlab Info] Matlab started. Running kinemtaics solver... \n')
+fprintf('[Matlab Info] Matlab started. Running kinemtaics solver... \n');
 
 targetPosition = [input(1:3)];
 followTime = input(4);
