@@ -7,8 +7,9 @@ transformW2R    = [input(6:9);
                    input(10:13); 
                    input(14:17); 
                    input(18:21)];
+fileNumber = input(22);
 
-releasePostions = [0.35, 0.40, 0.40;
+releasePositions = [0.35, 0.40, 0.40;
                   0.50, 0.40, 0.35;
                   0.45, 0.50, 0.40;
                   0.50, 0.50, 0.40;
@@ -16,35 +17,48 @@ releasePostions = [0.35, 0.40, 0.40;
                   0.35, 0.50, 0.35;
                   0.40, 0.50, 0.35];
 
+jointAcceleration = 5;
+
 status = 100000;
-error = 900000000000000;
+error = 9;
 
 for i = 1:7
 
-    releasePostion = releasePostions(i, 1:3);
+    releasePosition = releasePositions(i, 1:3);
 
-    fprintf('Testing release position: [%6.3f %6.3f %6.3f]\n', releasePostion);
+    fprintf('[Matlab Info] Testing release position: [%6.3f %6.3f %6.3f ]\n', releasePosition);
 
-    positionDifference = norm(releasePostion(1:2) - targetPosition(1:2));
+    positionDifference = norm(releasePosition(1:2) - targetPosition(1:2));
 
     if positionDifference < 0.20
+        if i ~= 7
+            fprintf('[Matlab Error] Horizontal distance <20cm. Trying next release point...\n')
+        end
         continue
     end
 
-    [yaw, pitch, velocity] = trajectory(releasePostion, targetPosition);
+    [yaw, pitch, velocity] = trajectory(releasePosition, targetPosition);
 
-    fprintf('yaw, pitch, velocity: [%6.3f %6.3f %6.3f]\n', [yaw, pitch, velocity]);
+    if isnan(yaw) || isnan(pitch) || isnan(velocity)
+        fprintf('[Matlab Error] Trajectory calculation failed. Trying next release point...\n')
+    end
 
-    [status, q, qd] = throwFunction(releasePostion, yaw, pitch, velocity, followTime, frequency, transformW2R);
+    fprintf('[Matlab Info] Yaw, pitch, velocity: [%6.3f %6.3f %6.3f ]\n', [yaw, pitch, velocity]);
 
-    fprintf('status: %.2f\n', status);
+    [status, q, qd] = throwFunction(releasePosition, targetPosition, yaw, pitch, velocity, jointAcceleration, followTime, frequency, transformW2R, fileNumber);
+
+    fprintf('[Matlab Info] Status: %.2f\n', status);
 
     if status < 100
-        error = error + status * max(100 * (i-1), 1);
+
+        error = error * 100; 
+        error = error + status; 
+        
         if i == 7
             output = error;
             return
         end
+        fprintf('[Matlab Error] No viable path found. Trying next release point...\n')
         continue
     end
 
@@ -52,10 +66,14 @@ for i = 1:7
     qRelease = q(:,releaseIndex);
     qdRelease = qd(:,releaseIndex);
 
-    fprintf('Solution found!\n');
-    fprintf('release at q: %.2f\n', releaseIndex);
-    fprintf('release pose: [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', qRelease);
-    fprintf('release velocity: [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', rad2deg(qdRelease));
+    fprintf('[Matlab Info] \n');
+    fprintf('[Matlab Info] SOLUTION FOUND!\n');
+    fprintf('[Matlab Info] \n');
+    fprintf('[Matlab Info] Release at q: %.2f\n', releaseIndex);
+    fprintf('[Matlab Info] Release pose (deg): [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', qRelease);
+    fprintf('[Matlab Info] Release pose (rad): [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', deg2rad(qRelease));
+    fprintf('[Matlab Info] Release velocity (deg): [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', rad2deg(qdRelease));
+    fprintf('[Matlab Info] Release velocity (rad): [%6.3f %6.3f %6.3f %6.3f %6.3f %6.3f]\n', qdRelease);
 
 
     output = [status, deg2rad(q(:,1))'];
@@ -71,13 +89,12 @@ end
 
 end
 
-function [status, q, qd] = throwFunction(releasePosition, yaw, pitch, releaseVelocity, followTime, frequency, transformW2R)
+function [status, q, qd] = throwFunction(releasePosition, targetPosition, yaw, pitch, releaseVelocity, jointAcceleration, followTime, frequency, transformW2R, fileNumber)
 
 %% 1. Parameters
 
 % Initialize variables
 status = 100000;
-jointAcceleration = 5;
 dt = 1 / frequency; % Delta time; duration of each time step (s)
 q = 0;
 qd = 0;
@@ -141,10 +158,12 @@ addBody(robot, tcp, robot.BodyNames{end});
 %% 3. Compute TCP orientation
 
 % Create a normalized vector to indicate direction of throw (World Frame)
-dir_world = [cos(pitch)*(-cos(-yaw)); 
-             cos(pitch)*(-sin(-yaw)); 
+dir_world = [cos(pitch)*(-cos(yaw)); 
+             cos(pitch)*(sin(yaw)); 
              sin(pitch)];
 dir_world = dir_world / norm(dir_world);
+
+fprintf('[Matlab Info] Direction vector: [%6.3f %6.3f %6.3f ]\n', dir_world);
 
 % Rotate dir to be in base frame
 dir = R * dir_world;
@@ -235,8 +254,6 @@ if releasePosDiff > 0.005
     return
 end
 
-
-
 %% 5. Compute joint velocity at release point (Weighted / Soft Lock)
 
 % Calculate Jacobian and extract velocity portion
@@ -271,7 +288,7 @@ end
 %% 6. Generate lead-up trajectory in joint space
 
 % Find the highest joint velocity required at release
-maxJointVelocity = max(qd_release);
+maxJointVelocity = max(abs(qd_release));
 
 % Calculate global leadTime necessary to hit target velocity with given acceleration
 leadTime = maxJointVelocity / jointAcceleration;
@@ -287,8 +304,8 @@ qd_lead = zeros(6, numLeadMax);
 for i = 1:6
 
     % Set leadTime and points for specific joint
-    leadTime = qd_release(i) / jointAcceleration;
-    numLead = ceil(leadTime * frequency);
+    leadTimeMax = abs(qd_release(i)) / jointAcceleration;
+    numLead = ceil(leadTimeMax * frequency);
 
     % Reset qi_prev to release position
     qi_prev = q_release(i);
@@ -408,6 +425,28 @@ end
 q = rad2deg(q_traj);
 qd = qd_traj;
 
+%% Data log
+
+data = zeros(3, 6*size(q_traj, 1));
+
+data(1,1:3) = releasePosition';
+data(1,4) = yaw;
+data(1,5) = pitch;
+data(1,6) = releaseVelocity;
+data(1,7) = followTime;
+data(1,8) = leadTimeMax;
+data(1,9) = status;
+data(1,10:12) = targetPosition;
+
+for i = 1:size(q_traj,1)
+    offset = (i-1) * 6;
+    data(2, 1+offset : 6+offset) = q_traj(:, 1);
+    data(3, 1+offset : 6+offset) = qd_traj(:, 1);
+end
+
+filename = sprintf('%d.csv', fileNumber);
+writematrix(data, filename);
+
 end
 
 %% Helper functions
@@ -479,7 +518,8 @@ function [yaw, pitch, velocity] = trajectory(releasePosition, targetPosition)
     delta_z = delta_r(3); 
     
     if R_xy == 0
-        error('Målet er direkte over/under release-positionen, horisontal afstand er nul.');
+        fprintf('[Matlab error] Target is directly under release point\n');
+        return
     end
     % --- 1. Bestem Yaw (Resultat i RADIANER) ---
     % Yaw: 0 rad i -x retning. Positiv mod +y, Negativ mod -y.
@@ -530,7 +570,7 @@ function [yaw, pitch, velocity] = trajectory(releasePosition, targetPosition)
        if denominator_min > 0
            velocity = sqrt((g * R_xy^2) / denominator_min);
        else
-           error('Kan ikke ramme målet med minimum pitch-vinkel.'); 
+           fprintf('[Matlab error] Cannot hit target with minimum angle\n'); 
        end
     end
 end
