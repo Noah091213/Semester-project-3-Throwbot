@@ -1,0 +1,14 @@
+circle nr: 0 image frame: x=474.5 y=746.5
+circle nr: 1 image frame: x=797.5 y=908.5
+circle nr: 2 image frame: x=635.5 y=799.5
+circle nr: 3 image frame: x=315.5 y=639.5
+circle nr: 4 image frame: x=419.5 y=321.5
+circle nr: 5 image frame: x=738.5 y=690.5
+circle nr: 6 image frame: x=419.5 y=14.5
+circle nr: 7 image frame: x=264.5 y=14.5
+circle nr: 8 image frame: x=473.5 y=584.5
+circle nr: 9 image frame: x=779.5 y=11.5
+circle nr: 10 image frame: x=212.5 y=167.5
+circle nr: 11 image frame: x=624.5 y=12.5
+circle nr: 12 image frame: x=735.5 y=528.5
+
