@@ -11,13 +11,13 @@ transformW2R    = [input(6:9);
                    input(18:21)];
 fileNumber = input(22);
 
-releasePositions = [0.40, 0.45, 0.35;
-                  0.50, 0.45, 0.35;
+releasePositions = [0.45, 0.45, 0.35;
+                  0.55, 0.45, 0.35;
+                  0.45, 0.30, 0.35;
+                  0.55, 0.30, 0.40;
+                  0.45, 0.30, 0.50;
                   0.45, 0.50, 0.40;
-                  0.50, 0.50, 0.40;
-                  0.40, 0.40, 0.35;
-                  0.35, 0.50, 0.35;
-                  0.40, 0.50, 0.35];
+                  0.50, 0.45, 0.35];
 
 jointAcceleration = 5;
 
@@ -455,10 +455,10 @@ data(1, 1:length(meta_data)) = meta_data;
 data(2, 1:num_traj_elements) = q_traj(:)';
 data(3, 1:num_traj_elements) = qd_traj(:)';
 
-% % 5. Gem til fil
-% filename = sprintf('%d.csv', fileNumber);
-% fullFilePath = fullfile('DataLogs', filename);
-% writematrix(data, fullFilePath);
+% 5. Gem til fil
+filename = sprintf('%d.csv', fileNumber);
+fullFilePath = fullfile('DataLogs', filename);
+writematrix(data, fullFilePath);
 end
 
 %% Helper functions
