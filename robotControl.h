@@ -36,7 +36,7 @@ private:
     std::vector<double> q_min = {-2.79253, -3.14159, -2.53073, -1.74533, 1.13446, -6.28319};
     std::vector<double> q_max = {0.43633, 0.0, 0.0, 1.57080, 1.83260, 6.28319};
 
-    std::vector<double> homePosition = {-1.5708, -0.8727, -1.5708, -0.3491, 1.5708, 0};
+    std::vector<double> homePosition = {-1.5708, -1.0472, -1.5708, -1.5708, 1.5708, 0};
 
     std::vector<std::vector<double>> transformW2R;
     std::string robot_ip;
