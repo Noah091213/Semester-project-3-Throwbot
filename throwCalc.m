@@ -263,7 +263,7 @@ end
 Jv = J(1:3, :); 
 
 % Create weighted Jacobian such that wrist2 is more expensive to use
-W_diag = [1, 1, 1, 1, 5, 1]; 
+W_diag = [1, 1, 1, 1, 2, 1]; 
 W_inv = diag(1 ./ W_diag);
 J_weighted_inv = W_inv * Jv' / (Jv * W_inv * Jv');
 
@@ -365,8 +365,10 @@ for i = 1:numFollow
     [~,~,J] = kinUR5(q_prev');
     Jv = J(1:3, :);
 
+    J_weighted_inv = W_inv * Jv' / (Jv * W_inv * Jv');
+
     % Compute joint velocity
-    qd_temp = pinv(Jv) * v_desired;
+    qd_temp = J_weighted_inv * v_desired;
 
     % Update joint position
     q_next = q_prev + qd_temp * dt;
@@ -453,10 +455,10 @@ data(1, 1:length(meta_data)) = meta_data;
 data(2, 1:num_traj_elements) = q_traj(:)';
 data(3, 1:num_traj_elements) = qd_traj(:)';
 
-% 5. Gem til fil
-filename = sprintf('%d.csv', fileNumber);
-fullFilePath = fullfile('DataLogs', filename);
-writematrix(data, fullFilePath);
+% % 5. Gem til fil
+% filename = sprintf('%d.csv', fileNumber);
+% fullFilePath = fullfile('DataLogs', filename);
+% writematrix(data, fullFilePath);
 end
 
 %% Helper functions
