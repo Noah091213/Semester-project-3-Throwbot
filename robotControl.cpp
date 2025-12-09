@@ -74,7 +74,7 @@ using namespace ur_rtde;
 
         std::cout << "[Robot Info] Sending " << qd.size() << " speedJ commands." << std::endl;
     
-        double a = 3.75; // acceleration
+        double a = 6.25; // acceleration
         int count = 0; // command counter
         int releaseIndex = qd.size() - static_cast<int>(round(followTime * freq)); // index to release gripper
 

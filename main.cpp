@@ -70,7 +70,7 @@ int main() {
                 imgTestRectified = Vision::rectifyImage(imgTestUndist, tableNumber);
 
                 // Find a circular object and calculate the center point to aim for (the center of the target)
-                centerTarget = Vision::findCircularObject(imgTestRectified, 50, 30, 170, 180);
+                centerTarget = Vision::findCircularObject(imgTestRectified, 50, 30, 70, 80);
 
                 if (centerTarget.x == 0) {  // If a target is not found, center is still 0, thus calculations cannot begin
                     programState = 0;       // Return to default state
@@ -142,7 +142,7 @@ int main() {
 
                     break;
 
-                    case 2: // Calibrate 
+                    case 2: // Camera calibration
                         std::cout << "what table number are you calibrating?" << std::endl;
                         std::cin >> userInputInt;
                         std::cout << "You are calibrating for table " << userInputInt << std::endl;
@@ -151,7 +151,7 @@ int main() {
 
                     break;
                         
-                    case 3: // Calibrate the corneres for distortion
+                    case 3: // Homography calibration
                         std::cout << "what table number are you calibrating?" << std::endl;
                         std::cin >> userInputInt;
                         std::cout << "You are calibrating for table " << userInputInt << std::endl;

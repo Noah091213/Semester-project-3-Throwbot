@@ -307,8 +307,8 @@ std::vector<double> Vision::tableToWorld(const Vec& tableVec) {
 
     std::vector<double> output = {worldVec.at<double>(0,0), worldVec.at<double>(1,0), worldVec.at<double>(2,0)};
 
-    cout << "center x table frame: " << output[0] << endl;
-    cout << "center y table frame: " << output[1] << endl;
+    cout << "center x table frame: " << std::setprecision(5) << output[0] << endl;
+    cout << "center y table frame: " << std::setprecision(5) << output[1] << endl;
 
     return output;
 }
