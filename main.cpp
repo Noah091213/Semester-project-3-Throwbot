@@ -196,7 +196,7 @@ int main() {
 
 
             case 4: // Manual control
-                std::cout << "\n\nManual control options:\n\n" << " 1. Home \n 2. Pick up ball \n 3. Open gripper \n 4. Close gripper \n 5. Get TCP location \n 6. Return to main menu" << std::endl;
+                std::cout << "\n\nManual control options:\n\n" << " 1. Home \n 2. Pick up ball \n 3. Open gripper \n 4. Close gripper \n 5. Release gripper \n 6. Get TCP location \n 7. Return to main menu" << std::endl;
                 std::cin >> userInputInt;
                 
                 switch (userInputInt) {
@@ -221,12 +221,20 @@ int main() {
 
                     break;
 
-                    case 5: // Get TCP position
+                    case 5: // Release gripper
+                        std::cout << "---------------- RELEASE ----------------" << std::endl;
+                        std::thread([]() {
+                            Gripper::release();  // runs independently
+                        }).detach();
+
+                    break;
+
+                    case 6: // Get TCP position
                         robot.getToolPosition();
 
                     break;
 
-                    case 6: // Exit to main menu
+                    case 7: // Exit to main menu
                         programState = 0;
 
                     break;
