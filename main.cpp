@@ -1,6 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <vector>
+#include <filesystem>
 #include "Vision.h"
 #include "robotControl.h"
 #include "matlabComm.hpp"
@@ -14,6 +15,9 @@ int main() {
     int programState = 0;
     int userInputInt;
     int tableNumber  = 1;
+    int targetTable;
+    std::string homographyFile;
+    std::string calibrationFile;
     double frequency = 125;     // Hz
     double followTime = 0.5;    // In seconds
     std::vector<std::vector<double>> transformW2R = {
@@ -133,12 +137,32 @@ int main() {
 
 
             case 3: // Calibrate/settings
-                std::cout << "\n\nCalibration menu:\n\n" << " 1. Use existing calibration \n 2. Calibrate camera \n 3. Calibrate tabel corners \n 4. Exit to main menu" << std::endl;
+                std::cout << "\n\nCalibration menu:\n\n" << " 1. Choose a table (default=1) \n 2. Calibrate camera \n 3. Calibrate tabel corners \n 4. Exit to main menu" << std::endl;
                 std::cin >> userInputInt;
 
                 switch (userInputInt) {
                     case 1:
-                        // For future implementation
+                        std::cout << "What table number would you like to set? (1-4)" << std::endl;
+                        std::cin >> targetTable;
+
+                        if (targetTable < 1 || targetTable > 4) {
+                            targetTable = 1;
+                            std::cout << "Please select a number between 1 and 4... Defaulted to 1." << std::endl;
+                        }
+
+                        // Construct filenames dynamically
+                        homographyFile = "homography_table_" + std::to_string(targetTable) + ".yaml";
+                        calibrationFile = "camera_calibration_table_" + std::to_string(targetTable) + ".yaml";
+
+                        // Check if BOTH files exist
+                        if (std::filesystem::exists(homographyFile) && std::filesystem::exists(calibrationFile)) {
+                            tableNumber = targetTable;
+                            std::cout << "Table is now set to: " << tableNumber << std::endl;
+                        } else {
+                            std::cerr << "Error: Configuration files for table " << targetTable << " do not exist." << std::endl;
+                            tableNumber = 1;
+                            std::cout << "Defaulted to 1." << std::endl;
+                        }
 
                     break;
 
