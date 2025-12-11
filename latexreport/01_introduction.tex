@@ -12,11 +12,13 @@ Using a UR5 robot arm with an attached gripper, a camera, and software, the aim 
 
 \section{Problem Definition}
 
-Make a UR5 robot arm throw an object at a designated target
-- Identify the target point using machine vision
-- Plan a trajectory for the object using physics and kinematics
-- Control a UR5 and gripper based on modelled trajectory
-The solution is expected to consistently hit within the visual bullseye of the Velcro dart board, as seen in figure 1. Specifically, the center of the ball should be within 2 cm of the center of the bullseye. This accuracy would also allow the solution to hit within the opening of a standard American 16 oz red solo cup with a ping pong ball. The accuracy is accepted to be consistent, if at least 90% of throws hit within the accepted target area.
+\textbf{Make a UR5 robot arm throw an object at a designated target}
+\begin{itemize}
+	\item Identify the target point using machine vision
+	\item Plan a trajectory for the object using physics and kinematics
+	\item Control a UR5 and gripper based on modeled trajectory
+\end{itemize}
+The solution is expected to consistently hit within the visual bullseye of the Velcro dart board, as seen in \textcolor{red}{figure \ref{fig:dartboard}}. Specifically, the center of the ball should be within 2 cm of the center of the bullseye. This accuracy would also allow the solution to hit within the opening of a standard American 16 oz red solo cup with a ping pong ball. The accuracy is accepted to be consistent, if at least 90\% of throws hit within the accepted target area.
 Additionally, the solution should require no human intervention once started, apart from placing the ball in a designated pickup area at the start of each throw.
 
 \section{Constraints \& Limitations}

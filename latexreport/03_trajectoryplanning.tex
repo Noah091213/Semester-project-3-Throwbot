@@ -4,5 +4,102 @@
 \section{Physics}
 
 \section{Kinematics}
+Given the object trajectory required to hit the target, the movement of the robot can be determined such that the object reaches the desired velocity and direction at the point of release. By moving the tool center point (TCP) and there by the object, the goal is to have the TCP at the exact location of the release point at the same time as the velocity of the TCP matched the desired velocity and direction of the ball trajectory. 
+
+To create the movement sequence the desired joint pose and velocity will be determined for a set of time steps spaced 8ms apart to match the robots frequency ($f$) of 125Hz. The first step in this process is to ensure that the positions and angles given in world frame can be converted to the robots base frame.
+
+\subsection{Calibration}
+
+
+\subsection{Robot Path Planning}
+With the homogeneous transformation matrix from world frame to base frame found, the robots required path can be determined. This process is done using Matlab with the Robotics System Toolbox (RST) \textcolor{red}{ref}. The path is split into two sections, what happens before the release point and what happens after. These two path sequences will be called lead-up and follow-through. 
+
+\subsubsection{Inverse Kinematics}
+The first step in the process is determining what joint position will provide the required release position in Cartesian space while staying within the joint limits. This is done using the generalized inverse kinematics solver from RST. This solver uses an optimization algorithm to find a solution that best satisfies a list of requirements. Four things are provided to the solver; joint limits, desired TCP position, desired TCP orientation and desired joint configuration.
+
+Firstly, the joint limits are found directly in the teach pendant of the UR5 robot. An offset is applied to these limits to ensure that the solution is not close to a joint boundary, which would highly limit any movement of the joint in the lead-up and follow-through paths. The offset limits are converted from degrees to radians and input to the solver using a weight of 500, which determines its cost in the solvers cost-limiting optimization algorithm. 
+
+Secondly, the release position is converted from world frame to base frame using the transformation matrix found during calibration and input to the solver with a weight of 50.
+
+Thirdly, the desired TCP orientation is found based on the yaw and pitch found during the ball trajectory planning. The angles are converted into a normalized vector in world frame. A rotation matrix is created such that the Y-axis points in the opposite direction of the vector. The Z-axis is set to point as much downwards as possible in the world frame while still remaining orthogonal to the Y-axis. The X-axis is set to be orthogonal to both the Y and Z-axis, completing the right-handed frame. The rotation matrix is then converted from world frame to base frame. The main objective of this orientation is to ensure that the gripper is not in the way of the ball after its release. The completed rotation matrix is input to the solver with a weight of 1.
+
+Lastly, the solver is given a desired joint pose. This pose is set to the center of each joints' allowed movement range in order to target solutions that give the maximum range of motion in both direction.
+
+If the solver does not managed to find a pose that satisfies the inputs, an error code is received and stored. Otherwise, the solver's solution, defined as $\mathbf{q}_{\text{release}}$, is checked to ensure it is within tolerance. This check is done by finding the distance from the desired TCP position to the computed TCP position, if the computed position is more that 5 mm off, an error code is set.
+
+\subsubsection{Joint velocity at release}With the joint pose for the release position found, the required joint velocities at release can be determined based on the ball's desired velocity magnitude ($vel$) and direction vector ($\mathbf{dir}$). The desired TCP linear velocity is defined as $\mathbf{v}_{\text{release}} = vel \cdot \mathbf{dir}$.Firstly, the velocity Jacobian ($\mathbf{J}_{\text{vel}}$) is found for the joint pose. This $6 \times 6$ matrix is derived from the robot's kinematic model using the Matlab function provided by Inigo Iturrate. The first three rows determine the TCP linear velocity, and the last three rows determine the TCP angular velocity. For this task, only the linear velocity portion (the first $3$ rows) is necessary, making $\mathbf{J}_{\text{vel}}$ a $3 \times 6$ matrix.Since the UR5 is kinematically redundant for this task (6 joints, 3 required outputs), and because certain joints (like Wrist 2) are highly restricted, a weighted pseudo-inverse of the Jacobian is used. This requires defining a diagonal joint cost matrix, $\mathbf{W}$, where higher values impose a greater penalty on the corresponding joint velocity. With the cost matrix, the weighted pseudo-inverse ($\mathbf{J}_{\text{weighted}}$) is calculated using the following formula:
+\begin{equation}
+	\mathbf{J}_{\text{weighted}} = \mathbf{W}^{-1} \mathbf{J}_{\text{vel}}^T (\mathbf{J}_{\text{vel}} \mathbf{W}^{-1} \mathbf{J}_{\text{vel}}^T)^{-1}
+\end{equation}
+
+With the weighted pseudo-inverse, the required joint velocities at release ($\mathbf{\dot{q}}_{\text{release}}$) can be determined:
+
+\begin{equation}
+	\mathbf{\dot{q}}_{\text{release}} = \mathbf{J}_{\text{weighted}} \mathbf{v}_{\text{release}}
+\end{equation}
+
+\subsubsection{Lead-up}The lead-up path is determined in joint space based on the computed release position ($\mathbf{q}_{\text{release}}$) and the required release velocity ($\mathbf{\dot{q}}_{\text{release}}$). In order to limit the joints' movements, the path is generated linearly for each joint using a constant acceleration ($a$). The path is computed backwards from the release point until each joint reaches a velocity of 0. For each joint $j$ the number of time steps required to hit the desired velocity is determined:
+
+\begin{align}
+	\text{time}_{\mathbf{j}} &= \frac{|\mathbf{\dot{q}}_{\text{release},j}|}{a} \\
+	\text{steps}_{\mathbf{j}} &= \lceil \text{time}_{\mathbf{j}} \cdot f \rceil
+\end{align}
+
+The joint requiring the most steps determines the total steps for the trajectory ($\text{steps}_{\text{max}} = \max(\text{steps}_j)$). Then the position ($\mathbf{q}$) and velocity ($\mathbf{\dot{q}}$) at each time step $i$ can be determined for each joint $j$ using the time step $\Delta t = 1 / f$. The iteration index $i$ runs backward from $i=1$ (the release point) to $i=\text{steps}_{\text{max}}$ (the start of the movement):
+
+\begin{align}
+	\mathbf{\dot{q}}_{i,j} &= \mathbf{\dot{q}}_{\text{release},j} \cdot \max\left(\left(1 - \frac{i}{\text{steps}_{\mathbf{j}}}\right), 0\right) \\
+	\mathbf{q}_{i,j} &= \mathbf{q}_{i-1,j} - \mathbf{\dot{q}}_{i,j} \cdot \Delta t
+\end{align}
+
+The $\max(\cdot, 0)$ function ensures that joints which complete their movement faster than the global $\text{steps}_{\text{max}}$ will have their velocity clipped to zero for the remainder of the trajectory, thereby synchronizing the start and end of all joint movements. With the full lead-up sequence determined it can now be checked against the joint limits. Each joint's positions is checked against their respective limits, if any joint exceeds the boundaries, an error code is registered.
+
+\subsubsection{Follow-through}
+The follow-through is determined in Cartesian space rather than joint space to allow the TCP to decelerate in a linear motion in the direction of the ball's initial trajectory. This is done to allow for small errors in the timing of the release. Should the ball be released slightly too late, it will still be traveling in the correct direction at a reduced speed, negating some of the impact of the delayed release. The method for determining the follow-through path is similar to the method used for the lead-up, but since it is done in Cartesian space, some changes are required.
+
+Rather than using a constant deceleration in joint space to compute the require time, the opposite is done here. A static time of 0.5 seconds is set for the follow-through, which generates a static number of time steps ()$\text{steps}_{\text{follow}}$). The desired velocity in Cartesian space can then be calculated for each time step such that the TCP decelerates at a constant rate until the velocity is 0 at the last time step in the sequence. At each time step, the desired Cartesian velocity can be converted to joint velocities using that positions Jacobian ($\mathbf{J}_\text{weighted,i}$). The Jacobian is again found using the kinematics function and transformed into a weighted pseudo-inverse with only the velocity parameters. With the joint velocity, the joint position can be updated. The iteration index $i$ runs from $i = 1$ to $\text{steps}_{\text{follow}}$
+
+\begin{align}
+	\text{steps}_{\text{follow}} &= round(0.5 \cdot f) \\
+	\mathbf{v}_\text{i} &= (1 - \frac{i}{\text{steps}_{\text{follow}}}) \cdot \mathbf{v}_\text{release} \\
+	\mathbf{\dot{q}}_\text{i} &= \mathbf{J}_\text{weighted,i} * \mathbf{v}_\text{i} \\
+	\mathbf{q}_\text{i} &= \mathbf{q}_\text{i-1} + \mathbf{\dot{q}}_\text{i} \cdot \Delta t
+\end{align} 
+
+Since the follow-through trajectory is generated in Cartesian space, it is not limiting the amount of space needed in joint space. Therefore, the joints' positions at each time step is checked against their respective limits, and their velocity set to 0 if the joint gets within 5 degrees of the limit. This does mean that some follow-through trajectories will not be linear in Cartesian space for the full movement, but will stay linear for as long as the joints allow.
+
+\subsubsection{Safety check}
+With the lead-up, release point, and follow-through generated the entire sequence can be combined to create the full movement. Since only the joint limits have been checked during the generation of the movement, the TCP limits in Cartesian space must be checked by the end to ensure that movement will not push the TCP outside its boundaries. This is done by finding the TCP position at each time step using forward kinematics and checking its x, y and z coordinate against the limits. If any position is outside the limits, an error code is registered.
+
+\subsubsection{Status}
+Throughout the path generation the safety checks will provide status codes or error codes if anything is outside the tolerances or a limit is enforced. Two types of codes can be generated, either the safety check forces the path generation to stop completely and gives and error code, or it is accepted, noted in the status code, and the generation continues. The errors that stop the generation are mainly errors that occur if the path is outside a safety limit, either in joint or Cartesian space. These errors are all noted as two digit numbers with the left digit being 2. E.g. if the path is outside TCP limits, the error code will show 24.
+
+The status code is updated throughout the calculations whenever the calculation shows some imperfection. If a path is generated with no imperfections it will show 100000. Each digit after the left-most 1 indicates a different imperfection. The digit in the second position from the left shows how far the calculated release position is from the desired release position in the world frame and is noted in mm. E.g. a status of 130000 means a path was generated but the TCP will be off by 3mm at release. The full list of status codes is as follows:
+
+\begin{itemize}[noitemsep]
+	\item 100000: All good
+	\item 1x0000: IK release point is off by x in mm
+	\item 10x000: Release velocity loss by x in \%
+	\item 100100: Joint angles clipped to limits in follow-through
+	\item 20: No IK solution for release configuration
+	\item 21: IK release point is off by > 5mm
+	\item 22: Release velocity loss of > 3\%
+	\item 23: Joint limits exceeded in lead-up
+	\item 24: TCP limits exceeded
+	\item 26: Release point too close to target point
+\end{itemize}
+
+\subsection{Release points}
+As the generation of both the ball's trajectory and the robot's movement is determined based on the release point, some release points may lead to a solution while others may not. In order to achieve the highest likelihood that a solution is found, the calculations are run multiple times using a sequence of 7 release points. If the first release points does not generate a valid solution, the next is tried and so on. The 7 points were chosen during the test phase of the system and should be enough to cover most of the target area that is physically possible to hit. If no solution is found for any of the 7 points, it is likely that no release point exists that would generate a solution for that specific target point. Matlab will return a full status code with all 7 error codes to the C++ program, letting the user know that the target is not within reach, while giving some indication as to what makes the target impossible to hit.
 
 \subsection{MATLAB Communication}
+
+
+
+
+
+
+
+
+
+

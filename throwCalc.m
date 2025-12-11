@@ -293,10 +293,10 @@ end
 maxJointVelocity = max(abs(qd_release));
 
 % Calculate global leadTime necessary to hit target velocity with given acceleration
-leadTime = maxJointVelocity / jointAcceleration;
+leadTimeMax = maxJointVelocity / jointAcceleration;
 
 % Calculate global points needed for lead trajectory
-numLeadMax = ceil(leadTime * frequency);
+numLeadMax = ceil(leadTimeMax * frequency);
 
 % Initialize matrices
 q_lead = zeros(6, numLeadMax);
@@ -306,8 +306,8 @@ qd_lead = zeros(6, numLeadMax);
 for i = 1:6
 
     % Set leadTime and points for specific joint
-    leadTimeMax = abs(qd_release(i)) / jointAcceleration;
-    numLead = ceil(leadTimeMax * frequency);
+    leadTime = abs(qd_release(i)) / jointAcceleration;
+    numLead = ceil(leadTime * frequency);
 
     % Reset qi_prev to release position
     qi_prev = q_release(i);
