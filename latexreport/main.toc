@@ -18,7 +18,7 @@
 \contentsline {subsubsection}{Lead-up}{5}{equation.3.2.2}%
 \contentsline {subsubsection}{Follow-through}{6}{equation.3.2.6}%
 \contentsline {subsubsection}{Safety check}{7}{equation.3.2.10}%
-\contentsline {subsubsection}{Status}{7}{equation.3.2.10}%
+\contentsline {subsubsection}{Status codes}{7}{equation.3.2.10}%
 \contentsline {subsection}{\numberline {3.2.3}Release points}{8}{subsection.3.2.3}%
 \contentsline {subsection}{\numberline {3.2.4}MATLAB Communication}{8}{subsection.3.2.4}%
 \contentsline {chapter}{\numberline {4}Robot Control}{9}{chapter.4}%
