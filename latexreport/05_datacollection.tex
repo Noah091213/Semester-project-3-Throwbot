@@ -1,3 +1,15 @@
 \chapter{Data Collection}
 \label{chap:datacollection}
 
+In order to iteratively improve the performance and understand the behavior of the robotic system, a robust data collection mechanism was implemented. This process is critical for validating the calculated path against the robot's actual motion, particularly during the high-speed throwing sequence.
+
+For each calculated throw, a comma-separated values (CSV) file is generated. The file is initially populated with the crucial input parameters and pre-computed trajectory data, including:
+\begin{itemize}
+	\item Target and release points
+	\item Ballistic parameters (e.g., pitch, yaw, release velocity)
+	\item Status code
+	\item The complete pre-computed sequences of joint positions ($\mathbf{q}$) and velocities ($\mathbf{\dot{q}}$)
+\end{itemize}
+During the execution of the movement, the actual joint positions and velocities achieved by the UR5 are requested from the robot controller using the RTDE Receive Interface. These real-time values are simultaneously logged to the same CSV file. This combined dataset allows for a direct comparative analysis between the modeled throw (Matlab output) and the executed throw (RTDE feedback). 
+
+\textcolor{orange}{noget om plastik ringene?}

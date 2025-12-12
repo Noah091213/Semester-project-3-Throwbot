@@ -19,15 +19,18 @@
 \contentsline {subsubsection}{Follow-through}{6}{equation.3.2.6}%
 \contentsline {subsubsection}{Safety check}{7}{equation.3.2.10}%
 \contentsline {subsubsection}{Status codes}{7}{equation.3.2.10}%
-\contentsline {subsection}{\numberline {3.2.3}Release points}{8}{subsection.3.2.3}%
-\contentsline {subsection}{\numberline {3.2.4}MATLAB Communication}{8}{subsection.3.2.4}%
+\contentsline {subsubsection}{Release Points}{8}{equation.3.2.10}%
+\contentsline {subsection}{\numberline {3.2.3}MATLAB Communication}{8}{subsection.3.2.3}%
 \contentsline {chapter}{\numberline {4}Robot Control}{9}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Gripper}{9}{section.4.1}%
-\contentsline {section}{\numberline {4.2}UR5}{9}{section.4.2}%
+\contentsline {section}{\numberline {4.2}UR5 Communication Interface}{9}{section.4.2}%
 \contentsline {chapter}{\numberline {5}Data Collection}{10}{chapter.5}%
 \contentsline {chapter}{\numberline {6}Evaluation}{11}{chapter.6}%
 \contentsline {chapter}{\numberline {7}Discussion}{12}{chapter.7}%
-\contentsline {chapter}{\numberline {8}Conclusion}{13}{chapter.8}%
-\contentsline {chapter}{\numberline {9}References}{14}{chapter.9}%
-\contentsline {chapter}{\numberline {A}Distribution of tasks}{15}{appendix.A}%
-\contentsline {chapter}{\numberline {B}Code}{16}{appendix.B}%
+\contentsline {section}{\numberline {7.1}Trajectory Planning}{12}{section.7.1}%
+\contentsline {subsection}{\numberline {7.1.1}Ball Trajectory}{12}{subsection.7.1.1}%
+\contentsline {subsection}{\numberline {7.1.2}Robot Path Planning}{12}{subsection.7.1.2}%
+\contentsline {chapter}{\numberline {8}Conclusion}{14}{chapter.8}%
+\contentsline {chapter}{\numberline {9}References}{15}{chapter.9}%
+\contentsline {chapter}{\numberline {A}Distribution of tasks}{16}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Code}{17}{appendix.B}%
