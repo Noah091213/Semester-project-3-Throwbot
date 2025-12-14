@@ -3,6 +3,22 @@
 
 \section{Gripper}
 
+the gripper used by the project is WSG50 from Weiss. the connection to the gripper happens with a Transmission Control Protocol (TCP) server and client. the gripper is the TCP server, and the TCP client is made in a c++ class. \newline
+to control the gripper 4 functions are used. HOME(), GRIP(), RELEASE(), BYE(). \newline
+HOME() is called when the connection to the gripper is made. that is to insure the gripper starts in the same position.\newline
+GRIP() function works by the gripper keeps closing until a 80N force is reached.\newline
+RELEASE() function works by opening the gripper X mm.\newline
+BYE() funciton closes the connection to the gripper safely
+each function returns "ACK function name()" when it starts, and returns "FIN function name()" when it is done exept BYE() which only return "FIN BYE()". \newline
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.3]{gripper.png} % \includegraphics now works
+	\caption{WSG50 Weiss gripper} % \caption now works inside the float
+	\label{fig:rwar_image}
+\end{figure}
+
+
 \section{UR5 Communication Interface}
 In order to control the robot and simultaneously receive data from it, Universal Robots' (UR) Real-Time Data Exchange (RTDE) interface, which is available by default on UR's robots, was used. The RTDE is a low-level communication protocol that operates over a standard TCP/IP connection, enabling external applications to exchange data and control signals with the UR controller at a high frequency \textcolor{red}{ref}. 
 
