@@ -3,16 +3,19 @@
 
 \section{Physics}
 
-
-the first part of finding the trajectory of an object is to find its path given two coordinates, the release and target coordinate. with the given coordinates yaw, pitch and start velocity ($\mathbf{v}_{\text{0}}$) can be calculated for the release position.  \newline
+The first part of finding the trajectory of an object is to find its path given two coordinates, the release and target coordinate. With the given coordinates yaw, pitch and start velocity ($\mathbf{v}_{\text{0}}$) can be calculated for the release position.
 %note: mention that our calcualtion are in -x?.
 %note: do i explain arctan2?
-assuming that the release coordinate is in (0. 0. 0) yaw is calculated with $\arctan_2(x, y)$. \newline
+Assuming that the release coordinate is in (0. 0. 0) yaw is calculated with $\arctan_2(x, y)$. 
 %note: explin how the funciton? (i dont know how)
-to calculate $\mathbf{v}_{\text{0}}$ the function $v_0 = \sqrt{\frac{g \cdot \sqrt{x² + y²}}{2 \cos^2(\theta_z) (\sqrt{x² + y²} \tan(\theta_z) - z)}}$ where $\theta_z$ is pitch, is used. \newline
+To calculate $\mathbf{v}_{\text{0}}$ the following function, where $\theta_z$ is pitch, is used: 
+\begin{align}
+	v_0 = \sqrt{\frac{g \cdot \sqrt{x² + y²}}{2 \cos^2(\theta_z) (\sqrt{x² + y²} \tan(\theta_z) - z)}}
+\end{align}
+
 %note:  22.5 deg minimum pitch?
 %note:  1000 steps for pitch?
-it is best to find the pitch which has the lowest $\mathbf{v}_{\text{0}}$ because that puts the least strain on the robot. to achieve this, it is needed to run through all pitches that make sense and calculate the $\mathbf{v}_{\text{0}}$ for each pitch.  pitches where it is needed to find a path is  $[0^\circ, 90^\circ[$. as finding a path below $0^\circ$ is not always possible and finding path with $90^\circ$ or above is impossible unless the target is below or behind the release point.
+To find the pitch which has the lowest $\mathbf{v}_{\text{0}}$. It is needed to run through all pitches that make sense and calculate the $\mathbf{v}_{\text{0}}$ for each pitch. Pitches where it is needed to find a path is $[0^\circ, 90^\circ[$. as finding a path below $0^\circ$ is not always possible and finding path with $90^\circ$ or above is impossible unless the target is below or behind the release point.
 
 
 
