@@ -14,6 +14,10 @@ This is the entire software framework that can identify a target using a camera,
 
 Due to safety constraints of the robot, the math needs to account for a lot of extra constraints, and a 3d printed pillar was used to allow picking up the ball, as the gripper cannot reach the table with the required safety constraints.
 
+## Video Showcase
+
+https://youtu.be/TekeDc8nFaY
+
 ## Getting Started
 
 - Copy the github repo to a linux enviroment.
@@ -64,6 +68,3 @@ cd build
 ./run.sh
 # Profit!
 ```
-## Video Showcase
-
-https://youtu.be/TekeDc8nFaY
