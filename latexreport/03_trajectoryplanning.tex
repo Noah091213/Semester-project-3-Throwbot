@@ -110,6 +110,9 @@ The status code is updated throughout the calculations whenever the calculation 
 As the generation of both the ball's trajectory and the robot's movement is determined based on the release point, some release points may lead to a solution while others may not. In order to achieve the highest likelihood that a solution is found, the calculations are run multiple times using a sequence of 7 release points. If the first release points does not generate a valid solution, the next is tried and so on. The 7 points were chosen during the test phase of the system and should be enough to cover most of the target area that is physically possible to hit. If no solution is found for any of the 7 points, it is likely that no release point exists that would generate a solution for that specific target point. Matlab will return a full status code with all 7 error codes to the C++ program, letting the user know that the target is not within reach, while giving some indication as to what makes the target impossible to hit.
 
 \subsection{MATLAB Communication}
+To run the Matlab script, the Matlab Engine API is used. This allows the C++ program to start the Matlab script, pass data over, and return any data from the calculations. 
+Matlab Engine works by starting the script as a separate process, passing the data through the API thus copying the data in a format Matlab can understand, running the script through, returning it through the API and lastly converting the data to something C++ can understand and closing the Matlab process. 
+Because Matlab Engine relies on a very specific character to run, the program must be started through a shell script, that preloads the very specific character, on top of the default Linux International Components for Unicode (ICU). The reason the Matlab ICU cannot be loaded solely is because Pylon, the library for the vision, requires access to another character from the standard Linux ICU.
 
 
 
