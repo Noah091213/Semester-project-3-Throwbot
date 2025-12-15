@@ -26,6 +26,20 @@ Given the object trajectory required to hit the target, the movement of the robo
 To create the movement sequence the desired joint pose and velocity will be determined for a set of time steps spaced 8ms apart to match the robots frequency ($f$) of 125Hz. The first step in this process is to ensure that the positions and angles given in world frame can be converted to the robots base frame.
 
 \subsection{Calibration}
+To enable accurate positioning of the robot relative to points defined on the table, a calibration between the robot base frame and the world frame was required. Since the robot operates internally in its own coordinate system, a rigid-body transformation must be established to relate externally defined world-frame coordinates to robot-frame coordinates. This relationship is described by a homogeneous transformation matrix consisting of a rotation, which aligns the coordinate axes, and a translation, which accounts for the offset between the frame origins. Without this calibration, tasks such as precise table measurements or the use of externally defined reference points would not be possible.
+\newline
+\newline
+The transformation was estimated by selecting 52 reference points on the table and recording their corresponding positions in both the world frame and the robot frame. A dedicated calibration tool was mounted on the robot flange to improve TCP alignment, and the robot was manually positioned so that the TCP contacted each reference point. This resulted in two corresponding datasets, which were imported into MATLAB for processing. To improve numerical robustness, both point sets were centered by subtracting their respective centroids, allowing the rotational component of the transformation to be estimated independently of translation.
+\newline
+\newline
+The rigid-body transformation was computed using a Singular Value Decomposition (SVD)–based least-squares method. An intermediate correlation matrix was constructed from the centered datasets, and its SVD was used to compute the optimal rotation matrix. The translation vector was subsequently obtained from the difference between the centroids of the two point sets. Together, these components form the complete homogeneous transformation between the world and robot frames.
+\newline
+\newline
+The quality of the calibration was evaluated using the RMS error, which measures the average Euclidean distance between corresponding points after transformation. The initial calibration yielded RMS errors in the range of 0.1991 m to 1.3078 m, indicating the presence of inaccurate or inconsistent measurements. An inspection of the data revealed four outliers, which were removed to prevent bias in the estimation. The initial calibration result,  is illustrated in Figure X, which shows the transformed robot-frame points and the corresponding world-frame points. 
+\newline
+\newline
+After outlier removal, the calibration was repeated using the refined datasets. This resulted in a significant improvement, with RMS errors reduced to the range of 0.0005 m to 0.0012 m. The final transformation is therefore considered accurate and reliable for subsequent tasks requiring precise alignment between the robot and the table reference frame. The result of this second calibration is shown in Figure Y, where the transformed robot-frame points and world-frame points are visualized after outlier removal.
+
 
 
 \subsection{Robot Path Planning}
