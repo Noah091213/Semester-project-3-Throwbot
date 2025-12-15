@@ -23,6 +23,16 @@ Additionally, the solution should require no human intervention once started, ap
 
 \section{Constraints \& Limitations}
 
+The developed system is subject to constraints originating from the physical hardware and from assumptions introduced during modelling and implementation.
+
+The robot motion is limited by the joint limits and Cartesian workspace boundaries defined by the UR5 safety configuration. Only motions that remain within these limits can be executed. The mechanical design of the gripper constrains the admissible release pose and orientation of the ball.
+
+Further limitations arise from modelling and implementation assumptions. The throwing motion is defined as a sequence consisting of lead-up, release, and follow-through phases. The robot–table calibration assumes a rigid and planar table surface and relies on manual TCP positioning during data acquisition. The calibration is treated as static.
+
+The vision subsystem assumes a fixed camera pose and stable illumination conditions. The homography-based mapping is valid only for points located on the table plane. Object detection is limited to circular targets within predefined size ranges.
+
+Trajectory planning assumes ideal projectile motion at the time of release and does not include aerodynamic effects such as air resistance or spin. Trajectories are computed offline and executed open-loop at a fixed control frequency. Operation of the system requires manual placement of the ball at a predefined pickup location prior to each trial.
+
 \section{System Overview}
 
 The system developed in this project integrates several key components that together enable the robot to perceive its environment, plan feasible trajectories, and execute accurate movements on a calibrated workspace. The workflow is structured around five core modules: machine vision, trajectory planning, kinematics, robot–table calibration, and robot control. These modules operate sequentially but remain closely interconnected to ensure reliable performance throughout the robotic task.
