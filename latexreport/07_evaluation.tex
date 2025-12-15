@@ -16,23 +16,69 @@ Qd desired vs qd actual, både dårlig og god data
 \begin{table}[h]
 	\centering
 	\caption{Weighted vs Unweighted Jacobian Test}
-	\label{tab:jacobian}
-	\begin{tabular}{rp{4.5cm}cc}
+	\label{tab:jacobian_v3}
+	\begin{tabular}{rp{6.5cm}ccl}
 		\toprule
-		\textbf{Status} & \textbf{Description} & \textbf{Unweighted} & \textbf{Weighted} \\
+		\textbf{Status} & \textbf{Description} & \textbf{Unweighted} & \textbf{Weighted} & \\
 		\midrule
-		21 & IK release position off by $> 5$ mm & 1424 & 1424 \\
-		23 & Joint limits exceeded in lead-up & 827 & 848 (21) \\
-		24 & TCP limits exceeded & 156 & 156 - \\
-		26 & Release position too close to target & 144 & 144 - \\
-		100000 & Perfect Hit ($<1$mm offset, clean) & 78 & 91 (13) \\
-		100100 & $<1$mm Offset + Follow-through Clipped & 22 & 0 (-22) \\
-		$1\times0000$ & 1-5mm Offset (clean) & 97 & 135 (38) \\
-		$1\times0100$ & 1-5mm Offset + Follow-through Clipped & 52 & 2 (-50) \\
+		21 & IK release position off by $> 5$ mm & 1424 & 1424 & \\
+		23 & Joint limits exceeded in lead-up & 827 & 848 & (+21) \\
+		24 & TCP limits exceeded & 156 & 156 &  \\
+		26 & Release position too close to target & 144 & 144 &  \\
+		100000 & Perfect Hit ($<1$mm offset, clean) & 78 & 91 & (+13) \\
+		100100 & $<1$mm Offset + Follow-through Clipped & 22 & 0 & (-22) \\
+		$1\text{X}0000$ & 1-5mm Offset (clean) & 97 & 135 & (+38) \\
+		$1\text{X}0100$ & 1-5mm Offset + Follow-through Clipped & 52 & 2 & (-50) \\
 		\midrule
-		\multicolumn{2}{l}{Targets hit (of 28 possible)} & 20 & 20 - \\
-		\multicolumn{2}{l}{Settings: Acceleration $5\ m/s^2$ Min. distance 20 cm} & & \\
+		\multicolumn{2}{l}{Targets hit (of 28 possible)} & 20 & 20 & \\
+		\multicolumn{3}{l}{Settings: Acceleration $5\ m/s^2$, Min. distance 20 cm} & & \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
+
+\begin{table}[h]
+	\centering
+	\caption{Acceleration Tests}
+	\label{tab:acceleration_test}
+	\begin{tabular}{rp{6.5cm}cclcl} % <--- Kolonne-definitionen er rettet til 7 kolonner
+		\toprule
+		\textbf{Status} & \textbf{Description} & \textbf{Acc. $4\ m/s^2$} & \multicolumn{2}{c}{\textbf{Acc. $5\ m/s^2$}} & \multicolumn{2}{c}{\textbf{Acc. $6\ m/s^2$}} \\
+		\midrule
+		21 & IK release position off by $> 5$ mm & 1423 & 1424 & (+1) & 1424 &  \\
+		23 & Joint limits exceeded in lead-up & 960 & 848 & (-112) & 741 & (-107) \\
+		24 & TCP limits exceeded & 120 & 156 & (+36) & 182 & (+26) \\
+		26 & Release position too close to target & 144 & 144 & & 144 & \\
+		100000 & Perfect Hit ($<1$mm offset, clean) & 59 & 91 & (+32) & 127 & (+36) \\
+		100100 & $<1$mm Offset + Follow-through Clipped & 0 & 0 & & 0 &  \\
+		$1\text{X}0000$ & 1-5mm Offset (clean) & 92 & 135 & (+43) & 180 & (+45) \\
+		$1\text{X}0100$ & 1-5mm Offset + Follow-through Clipped & 2 & 2 &  & 2 &  \\
+		\midrule
+		\multicolumn{2}{l}{Targets hit (of 28 possible)} & 17 & 20 & (+3) & 20 & \\
+		\multicolumn{7}{l}{Settings: Min. distance 20 cm, Weighted Jacobian} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}[h]
+	\centering
+	\caption{Acceleration Tests (Min. distance 35 cm)}
+	\label{tab:acceleration_test_35cm}
+	\begin{tabular}{rp{6.5cm}cclcl} 
+		\toprule
+		\textbf{Status} & \textbf{Description} & \textbf{Acc. $5\ m/s^2$} & \multicolumn{2}{c}{\textbf{Acc. $6\ m/s^2$}} & \multicolumn{2}{c}{\textbf{Acc. $7\ m/s^2$}} \\ 
+		\midrule
+		21 & IK release position off by $> 5$ mm & 652 & 652 & & 653 & (+1) \\
+		23 & Joint limits exceeded in lead-up & 2052 & 1945 & (-107) & 1818 & (-127) \\
+		24 & TCP limits exceeded & 40 & 95 & (+55) & 181 & (+86) \\
+		26 & Release position too close to target & 0 & 0 & & 0 & \\
+		100000 & Perfect Hit ($<1$mm offset, clean) & 31 & 58 & (+27) & 75 & (+17) \\
+		100100 & $<1$mm Offset + Follow-through Clipped & 0 & 0 & & 0 & \\
+		$1\text{X}0000$ & 1-5mm Offset (clean) & 25 & 49 & (+24) & 71 & (+22) \\
+		$1\text{X}0100$ & 1-5mm Offset + Follow-through Clipped & 0 & 1 & (+1) & 2 & (+1) \\
+		\midrule
+		\multicolumn{2}{l}{Targets hit (of 35 possible)} & 11 & 11 & & 12 & (+1) \\ 
+		\multicolumn{7}{l}{Settings: Min. distance 35 cm, Weighted Jacobian} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
