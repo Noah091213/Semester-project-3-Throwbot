@@ -38,11 +38,30 @@ The transformation was estimated by selecting 52 reference points on the table a
 The rigid-body transformation was computed using a Singular Value Decomposition (SVD)–based least-squares method. An intermediate correlation matrix was constructed from the centered datasets, and its SVD was used to compute the optimal rotation matrix. The translation vector was subsequently obtained from the difference between the centroids of the two point sets. Together, these components form the complete homogeneous transformation between the world and robot frames.
 \newline
 \newline
-The quality of the calibration was evaluated using the RMS error, which measures the average Euclidean distance between corresponding points after transformation. The initial calibration yielded RMS errors in the range of 0.1991 m to 1.3078 m, indicating the presence of inaccurate or inconsistent measurements. An inspection of the data revealed four outliers, which were removed to prevent bias in the estimation. The initial calibration result,  is illustrated in Figure X, which shows the transformed robot-frame points and the corresponding world-frame points. 
+The quality of the calibration was evaluated using the RMS error, which measures the average Euclidean distance between corresponding points after transformation. The initial calibration yielded RMS errors in the range of 0.1991 m to 1.3078 m, indicating the presence of inaccurate or inconsistent measurements. An inspection of the data revealed four outliers, which were removed to prevent bias in the estimation. 
 \newline
 \newline
-After outlier removal, the calibration was repeated using the refined datasets. This resulted in a significant improvement, with RMS errors reduced to the range of 0.0005 m to 0.0012 m. The final transformation is therefore considered accurate and reliable for subsequent tasks requiring precise alignment between the robot and the table reference frame. The result of this second calibration is shown in Figure Y, where the transformed robot-frame points and world-frame points are visualized after outlier removal.
+After outlier removal, the calibration was repeated using the refined datasets. This resulted in a significant improvement, with RMS errors reduced to the range of 0.0005 m to 0.0012 m. The final transformation is therefore considered accurate and reliable for subsequent tasks requiring precise alignment between the robot and the table reference frame. The results of the initial and repeated calibration procedures are shown in 
+Figures~\ref{fig:FirstCalibration} and~\ref{fig:FinalCalibration}, respectively.
+
 % to billeder her side by side med billede tekst 
+
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.48\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/FirstCalibration.png}
+		\caption{Visualization of the initial robot-table calibration using the complete dataset.}
+		\label{fig:FirstCalibration}
+	\end{minipage}
+	\hfill
+	\begin{minipage}{0.48\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{images/FinalCalibration.png}
+		\caption{Visualization of the repeated robot-table calibration after removal of identified outliers.}
+		\label{fig:FinalCalibration}
+	\end{minipage}
+\end{figure}
 
 
 \subsection{Robot Path Planning}
