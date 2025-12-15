@@ -13,5 +13,26 @@ Qd over tid, i.e. velocity profile
 
 Qd desired vs qd actual, både dårlig og god data
 
-
+\begin{table}[h]
+	\centering
+	\caption{Weighted vs Unweighted Jacobian Test}
+	\label{tab:jacobian}
+	\begin{tabular}{rp{4.5cm}cc}
+		\toprule
+		\textbf{Status} & \textbf{Description} & \textbf{Unweighted} & \textbf{Weighted} \\
+		\midrule
+		21 & IK release position off by $> 5$ mm & 1424 & 1424 \\
+		23 & Joint limits exceeded in lead-up & 827 & 848 (21) \\
+		24 & TCP limits exceeded & 156 & 156 - \\
+		26 & Release position too close to target & 144 & 144 - \\
+		100000 & Perfect Hit ($<1$mm offset, clean) & 78 & 91 (13) \\
+		100100 & $<1$mm Offset + Follow-through Clipped & 22 & 0 (-22) \\
+		$1\times0000$ & 1-5mm Offset (clean) & 97 & 135 (38) \\
+		$1\times0100$ & 1-5mm Offset + Follow-through Clipped & 52 & 2 (-50) \\
+		\midrule
+		\multicolumn{2}{l}{Targets hit (of 28 possible)} & 20 & 20 - \\
+		\multicolumn{2}{l}{Settings: Acceleration $5\ m/s^2$ Min. distance 20 cm} & & \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
