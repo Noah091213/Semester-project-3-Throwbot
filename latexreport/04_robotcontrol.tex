@@ -7,7 +7,7 @@ the gripper used by the project is WSG50 from Weiss. the connection to the gripp
 to control the gripper 4 functions are used. HOME(), GRIP(), RELEASE(), BYE(). \newline
 HOME() is called when the connection to the gripper is made. that is to insure the gripper starts in the same position.\newline
 GRIP() function works by the gripper keeps closing until a 80N force is reached.\newline
-RELEASE() function works by opening the gripper X mm.\newline
+RELEASE() function works by opening the gripper 5 mm.\newline
 BYE() funciton closes the connection to the gripper safely
 each function returns "ACK function name()" when it starts, and returns "FIN function name()" when it is done exept BYE() which only return "FIN BYE()". \newline
 
