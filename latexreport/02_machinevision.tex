@@ -132,7 +132,7 @@ The threshold value for edge detection and the circle confidence value are provi
 \subsection{Table to World Transformation}
 The final step converts the detected target location into the world frame. Since the rectified image is scaled in millimeters, the center coordinates $(c_x, c_y)$ returned by the Hough transform represent physical distances from the table origin.
 
-The \texttt{Vision::tableToWorld} function transforms these coordinates into the world frame. This consists of a rotation matrix R and a unit conversion from millimeters to meters:
+The \texttt{Vision::tableToWorld} function transforms these coordinates into the world frame. This consists of a rotation matrix $\mathbf{R}$ and a unit conversion from millimeters to meters:
 \begin{align}
 	\mathbf{P}_{world} = \mathbf{R} \cdot
 	\begin{pmatrix}
