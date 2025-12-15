@@ -4,3 +4,9 @@ build/cmake_install.cmake
 build/MakeFile
 build/compile_commands.json
 CMakeLists.txt.user
+latexreport/main.aux
+latexreport/main.log
+latexreport/main.out
+latexreport/main.toc
+latexreport/main.synctex.gz
+latexreport/main.pdf
