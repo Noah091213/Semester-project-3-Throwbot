@@ -1,22 +1,12 @@
 \chapter{Evaluation}
 \label{chap:evaluation}
 
-3 tabeller som viser simulationer
-
-Table overview with targets
-
-4 tabeller som viser testkast
-
-Sammenligning af model vs robot accel
-
-Qd over tid, i.e. velocity profile
-
 Qd desired vs qd actual, både dårlig og god data
 
 \begin{table}[h]
 	\centering
-	\caption{Weighted vs Unweighted Jacobian Test}
-	\label{tab:jacobian_v3}
+	\caption{Simulation Test: Weighted vs Unweighted Jacobian}
+	\label{tab:jacobian_w_vs_u}
 	\begin{tabular}{rp{6.5cm}ccl}
 		\toprule
 		\textbf{Status} & \textbf{Description} & \textbf{Unweighted} & \textbf{Weighted} & \\
@@ -36,12 +26,11 @@ Qd desired vs qd actual, både dårlig og god data
 	\end{tabular}
 \end{table}
 
-
 \begin{table}[h]
 	\centering
-	\caption{Acceleration Tests}
+	\caption{Simulation Test: Acceleration}
 	\label{tab:acceleration_test}
-	\begin{tabular}{rp{6.5cm}cclcl} % <--- Kolonne-definitionen er rettet til 7 kolonner
+	\begin{tabular}{rp{6.5cm}cclcl}
 		\toprule
 		\textbf{Status} & \textbf{Description} & \textbf{Acc. $4\ m/s^2$} & \multicolumn{2}{c}{\textbf{Acc. $5\ m/s^2$}} & \multicolumn{2}{c}{\textbf{Acc. $6\ m/s^2$}} \\
 		\midrule
@@ -62,7 +51,7 @@ Qd desired vs qd actual, både dårlig og god data
 
 \begin{table}[h]
 	\centering
-	\caption{Acceleration Tests (Min. distance 35 cm)}
+	\caption{Simulation Test: Acceleration at Distance > 35cm}
 	\label{tab:acceleration_test_35cm}
 	\begin{tabular}{rp{6.5cm}cclcl} 
 		\toprule
@@ -82,3 +71,190 @@ Qd desired vs qd actual, både dårlig og god data
 		\bottomrule
 	\end{tabular}
 \end{table}
+
+\begin{table}[h]
+	\centering
+	\caption{Physical Test: Accuracy}
+	\label{tab:test_throw}
+	\begin{tabular}{llccc}
+		\toprule
+		\textbf{Target} & \textbf{Release Offset} & \textbf{Misses} & \textbf{Boundary Hits} & \textbf{Clean Hits} \\
+		\midrule
+		Dartboard & 2 Time Steps, 16ms & 9 & 9 & 7 \\
+		Plastic Ring & 2 Time Steps, 16ms & 10 & 5 & 10 \\
+		Plastic Ring & 5 Time Steps, 40ms & 9 & 7 & 9 \\
+		Plastic Ring & 6 Time Steps, 48ms & 5 & 3 & 17 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{images/TableOverview1.png}
+		\caption{Initial Testing}
+		\label{fig:subfig:Short}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{images/TableOverview2.png}
+		\caption{Distance Testing}
+		\label{fig:subfig:Long}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{images/TableOverview3.png}
+		\caption{Combined Overview}
+		\label{fig:subfig:Combined}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[]{0.18\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{images/TableOverview4.png}
+		\label{fig:subfig:Description}
+	\end{subfigure}
+	\caption{Overhead Visualization of Experimental Workspace and Target Distribution}
+	\label{fig:TableOverview}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{images/MAE_Velocity.png}
+	\caption{Mean Absolute Error by Joint in $rad/s$. Model Acceleration $5 \ rad/s^2$}
+	\label{fig:MAE_Velocity}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{images/MAE_Position.png}
+	\caption{Mean Absolute Error by Joint in $rad$. Model Acceleration $5 \ rad/s^2$}
+	\label{fig:MAE_Position}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{images/VelocityProfile.png}
+	\caption{Absolute Model Velocity Over Time in $rad/s$}
+	\label{fig:VelocityProfile}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[]{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{images/VelocityOverTimeBase.png}
+		\caption{Base}
+		\label{fig:subfig:Base}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[]{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{images/VelocityOverTimeShoulder.png}
+		\caption{Shoulder}
+		\label{fig:subfig:Shoulder}
+	\end{subfigure}
+	
+	\vspace{3mm}
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{images/VelocityOverTimeElbow.png}
+		\caption{Elbow}
+		\label{fig:subfig:Elbow}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[]{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{images/VelocityOverTimeWrist1.png}
+		\caption{Wrist 1}
+		\label{fig:subfig:Wrist1}
+	\end{subfigure}
+	\caption{Comparison of Velocity Over Time Between Model and Robot in $rad/s$}
+	\label{fig:VelocityOverTime}
+\end{figure}
+
+
+\begin{comment}
+	
+	Tables for potential use
+	
+\begin{table}[h]
+	\centering
+	\caption{Dartboard Tests}
+	\label{tab:Dartboard_test}
+	\begin{tabular}{clllll}
+		\toprule
+		\textbf{Target} & \textbf{Attempt 1} & \textbf{Attempt 2} & \textbf{Attempt 3} & \textbf{Attempt 4} & \textbf{Attempt 5} \\
+		\midrule
+		1 & Edge & Miss & Miss & Edge & Edge \\
+		2 & Hit & Hit & Hit & Edge & Edge \\
+		3 & Hit & Hit & Edge & Edge & Hit \\
+		4 & Edge & Miss & Miss & Miss & Hit \\
+		5 & Miss & Miss & Miss & Miss & Edge \\
+		\midrule
+		\multicolumn{6}{l}{Settings: Target Dartboard, Release offset 16ms} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}[h]
+	\centering
+	\caption{Plastic Ring Tests}
+	\label{tab:Ring_test_16}
+	\begin{tabular}{clllll}
+		\toprule
+		\textbf{Target} & \textbf{Attempt 1} & \textbf{Attempt 2} & \textbf{Attempt 3} & \textbf{Attempt 4} & \textbf{Attempt 5} \\
+		\midrule
+		1 & Miss & Edge & Edge & Edge & Miss \\
+		2 & Hit & Hit & Miss & Hit & Hit \\
+		3 & Hit & Hit & Hit & Hit & Hit \\
+		4 & Miss & Miss & Edge & Miss & Hit \\
+		5 & Edge & Miss & Miss & Miss & Miss \\
+		\midrule
+		\multicolumn{6}{l}{Settings: Target Plastic Ring, Release offset 16ms} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}[h]
+	\centering
+	\caption{Plastic Ring Tests}
+	\label{tab:Ring_test_40}
+	\begin{tabular}{clllll}
+		\toprule
+		\textbf{Target} & \textbf{Attempt 1} & \textbf{Attempt 2} & \textbf{Attempt 3} & \textbf{Attempt 4} & \textbf{Attempt 5} \\
+		\midrule
+		1 & Hit & Hit & Hit & Edge & Edge \\
+		2 & Hit & Miss & Hit & Miss & Miss \\
+		3 & Miss & Edge & Miss & Hit & Hit \\
+		4 & Edge & Edge & Miss & Edge & Hit \\
+		5 & Miss & Hit & Miss & Edge & Miss \\
+		\midrule
+		\multicolumn{6}{l}{Settings: Target Plastic Ring, Release offset 40ms} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}[h]
+	\centering
+	\caption{Plastic Ring Tests}
+	\label{tab:Ring_test_48}
+	\begin{tabular}{clllll}
+		\toprule
+		\textbf{Target} & \textbf{Attempt 1} & \textbf{Attempt 2} & \textbf{Attempt 3} & \textbf{Attempt 4} & \textbf{Attempt 5} \\
+		\midrule
+		1 & Hit & Hit & Hit & Miss & Hit \\
+		2 & Hit & Hit & Hit & Hit & Hit \\
+		3 & Hit & Hit & Hit & Edge & Hit \\
+		4 & Miss & Hit & Hit & Edge & Hit \\
+		5 & Hit & Miss & Edge & Miss & Miss \\
+		\midrule
+		\multicolumn{6}{l}{Settings: Target Plastic Ring, Release offset 48ms} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+\end{comment}
+
