@@ -1,10 +1,145 @@
 \chapter{Machine Vision}
 \label{chap:machinevision}
+Since the robot needs to be able to hit a specific target which can be in different places, a form of machine vision is needed. In particular some sort of algorhithm which can find the defined target.
+A Basler Pylon (model number?) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries. 
+
+Since the camera distorts and warps the image because of the lense and the camera mounting position skews the perspective, calibration will be required. So, before the algorithm can be implemented this will need to be accounted for. Both the calibration and algorithm are implemented using OpenCV, a standard machine vision toolbox used for this exact purpose.
 
 \section{Calibration}
+The camera is modeled using the pinhole-model (figure?). This takes every point in 3D space and projects it through a single point, the pinhole, and hits the image plane forming a 2D image. However, in the real world light bends going through the lense so this needs to be modeled as well. 
+
+This is done using the cameras intrinsic matrix which contains the vertical and horizontal focal lengths and the cameras centerpoint (pinhole), together with five distortion coefficients to account for radial and tangential distortion. \newline
+
+
+OpenCV models radial distortion using the following formula:
+\begin{align}
+x_{corrected} = x(1 + k_1r^2 + k_2r^4 + k_3r^6)
+\end{align}
+\begin{align}
+y_{corrected} = y(1 + k_1r^2 + k_2r^4 + k_3r^6)
+\end{align}
+Radial distortion is caused by the curve of the lense and shows up as curving of the image the further from the center one looks. \newline
+
+OpenCV models tangential distortion using the following formula:
+\begin{align}
+x_{corrected} = x + [2p_1xy + p_2(r^2 + 2x^2)]
+\end{align}
+\begin{align}
+y_{corrected} = y + [p_1(r^2 + 2y^2) + 2p_2xy]
+\end{align}
+Tangential distortion is caused by the lense being on an angle to the image plane, making the image look skewed in one direction. \newline
+
+OpenCV then combines these into a 1 by 5 matrix:
+\begin{align}
+Distortion_{coefficients} = \begin{pmatrix}
+	k_1 & k_2 & p_1 & p_2 & k_3 
+\end{pmatrix}
+\end{align}
+Together with the intrinsic matrix:
+\begin{align}
+CameraMatrix = \begin{pmatrix}
+	f_x & 0 & x_0 \\
+	0 & f_y & y_0 \\
+	0 & 0 & 1 \\
+\end{pmatrix}
+\end{align}
+Where $f_x$, $f_y$ is the focal lengths and $x_0$, $y_0$ is the pinhole offset. \newline
+
+To calculate all of these parameters, a standard already known method is used [reference here, [1] Zhang, Zhengyou, A flexible new technique for camera calibration, IEEE Transactions on pattern analysis
+and machine intelligence 22 (2000).]. This uses multiple images of a chessboard to find points with known distances between them in the cameras field of view to calculate the intrinsic camera matrix and lens distortion coefficients. However, these parameters do not correct the perspective shift from the camera being at an angle to the table, the homography must be computed as well. Though, as only the table plane is relevant this becomes somewhat relatively simple.
 
 \section{Homography}
+Since only the table plane is relevant, a linear mapping from the image coordinates to the table coordinates can be computed. This mapping is called a homography, $\mathbf{H}$.
+
+The relationship is best described using homogeneous coordinates, where a 2D point is represented with an added third dimension equal to 1, also known as the scale factor. The homography relates a point in the image plane $\mathbf{x'}$ to a point on the table plane $\mathbf{x}$ as:
+$\alpha \mathbf{x} = \mathbf{Hx'}$ \newline
+
+Writing this out with coordinates $(i', j')$ for the image and $(i, j)$ for the table, the following system of equations can be written up:
+\begin{align}
+\begin{pmatrix}
+	i \cdot w \\
+	j \cdot w \\
+	w
+\end{pmatrix} = 
+\begin{pmatrix}
+	p_{00} & p_{01} & p_{02} \\
+	p_{10} & p_{11} & p_{12} \\
+	p_{20} & p_{21} & 1
+\end{pmatrix}
+\begin{pmatrix}
+	i' \\
+	j' \\
+	1
+\end{pmatrix}
+\end{align}
+
+Note that the scaling factor can be chosen freely, so it is possible to set the last entry of the matrix $p_{22}$ to 1. This leaves 8 unknown entries in the matrix that needs to be found.
+
+To solve for these unknowns, the scale factor $w$ can be eliminated by substituting the third equation ($w = p_{20}i' + p_{21}j' + 1$) into the first two. This results in the following two equations for a single point:
+\begin{align}
+i = p_{00} \cdot i' + p_{01} \cdot j' + p_{02} - p_{20} \cdot i \cdot i' - p_{21} \cdot i \cdot j'
+\end{align}
+\begin{align}
+j = p_{10} \cdot i' + p_{11} \cdot j' + p_{12} - p_{20} \cdot j \cdot i' - p_{21} \cdot j \cdot j'
+\end{align}
+Since each pair of corresponding points $(i', j') \leftrightarrow (i, j)$ gives two equations, and there are 8 unknowns, means at least four point pairs are needed to solve the system. This is set up as a matrix equation $\mathbf{Ap} = \mathbf{b}$ [reference here, [1] Zhang, Zhengyou, A flexible new technique for camera calibration, IEEE Transactions on pattern analysis
+and machine intelligence 22 (2000).], where $\mathbf{p}$  contains the unknown homography entries. By solving this, we get the specific values for the homography matrix $\mathbf{H}$, which allows us to convert any pixel coordinate in the image to a physical coordinate on the table.
 
 \section{Finding circular objects}
+Objects in the image are detected using the Hough transform, which is a feature extraction technique commonly used in machine vision. The purpose of this method is to detect geometric shapes that can be described by mathematical equations, such as straight lines or circles, even when the image is noisy or if edges are incomplete. For the purposes of this project, the circle variant is used as that is what best describes the defined target. \newline
+
+A circle with a fixed radius r is defined by the equation:
+\begin{align}
+(x-a)^2+(y-b)^2=r^2
+\end{align}
+Where $(x, y)$ are the coordinates in the image space, and $(a, b)$ is the center of the circle. \newline
+
+When the radius of the circle is known, the Hough transform uses a two-dimensional parameter space corresponding to the possible center coordinates $(a, b)$. An accumulator array of this parameter space is initialized with all values set to zero.
+
+First, an edge detection algorithm is applied to the image to identify edge pixels. For each detected edge pixel $(x, y)$, the algorithm computes all possible center points $(a, b)$ for which a circle with the given radius $r$ passes through $(x, y)$. Each valid center location receives a vote by incrementing the corresponding cell in the accumulator array.
+
+In other words, each edge pixel contributes votes along a circular path in the parameter space. When multiple edge pixels belong to the same physical circle in the image, their votes intersect at a common location in the accumulator. This intersection produces a local maximum, which corresponds to the estimated center of the detected circle.
+
+Though the implementation in OpenCV uses a slightly more complex version where the radius $r$ can vary. However, all this does is expand the parameter space to three dimensions where the new axis is the different values $r$ can have.
+
+\subsection{Why Hough Transform?}
+Other methods like searching for specific patterns within the defined target or looking at the colors of the target were considered. However, since the target and many other objects within the scene are circular means that the Hough transform is both more versatile and more robust, together with it being very easy to implement with OpenCV compared to any specific algorithm hardcoded to this scenario.
 
 \section{Implementation with OpenCV}
+The machine vision system is implemented as a dedicated C++ class, \texttt{Vision}, which handles camera access, calibration, and object detection. This design separates the vision processing from the main control logic, allowing the main loop to request object positions through a simple interface.
+
+\subsection{Calibration Implementation}
+The calibration process consists of two stages: intrinsic camera calibration and table plane rectification.
+
+Intrinsic Calibration: The \texttt{Vision::calibrateCam} function performs standard chessboard-based calibration. 20 images are captured, and the inner chessboard corners are detected using \texttt{cv::findChessboardCorners}. These corner locations are refined to sub-pixel accuracy using \texttt{cv::cornerSubPix} before being passed to \texttt{cv::calibrateCamera}. The resulting camera matrix and distortion coefficients are saved to a .yaml file with the tableID in the filename so that the calibration can be reused later and there can be seperate calibrations for each table if needed, as there can be differences in the camera setup.
+
+Homography and Rectification: To map image coordinates to the physical table plane, the \texttt{Vision::calibrateTableCorners} function computes a homography matrix $\mathbf{H}$. The user selects the four corners of the table in the image using a mouse callback. These pixel coordinates are paired with known real-world table coordinates defined in millimeters.
+
+Another, perhaps more robust, solution here would be to use the circular holes in the table as the points for the homography as they are also known positions. Though this was not implemented.
+
+The homography matrix is then computed using \texttt{cv::findHomography}, and because the destination coordinates are defined in millimeters, applying \texttt{cv::warpPerspective} produces a rectified, top-down view of the table where distances in the image directly correspond to physical distances on the table. This homography matrix is then also saved to a .yaml file.
+
+\subsection{Object Detection}
+The circular target object is detected in the \texttt{Vision::findCircularObject} method using the following processing steps:
+
+Undistortion and Rectification: The input image is first undistorted using the intrinsic calibration parameters and then rectified using the homography matrix. This results in a top-down view of the table with perspective distortion removed. (This is done before passing it to the function)
+
+Preprocessing: The rectified image is converted to grayscale and blurred using a Gaussian filter. This reduces image noise and improves the reliability of edge detection.
+
+Hough Transform: Circular features are detected using \texttt{cv::HoughCircles}.
+The threshold value for edge detection and the circle confidence value are provided by the main program (typically 50 and 30, though these values can be tweaked further). The minimum and maximum radius are constrained to 70-80 mm to ensure that only the defined target is detected.
+
+\subsection{Table to World Transformation}
+The final step converts the detected target location into the world frame. Since the rectified image is scaled in millimeters, the center coordinates $(c_x, c_y)$ returned by the Hough transform represent physical distances from the table origin.
+
+The \texttt{Vision::tableToWorld} function transforms these coordinates into the world frame. This consists of a rotation matrix R and a unit conversion from millimeters to meters:
+\begin{align}
+	\mathbf{P}_{world} = \mathbf{R} \cdot
+	\begin{pmatrix}
+		c_x \
+		c_y \
+		0
+	\end{pmatrix}
+	\cdot \frac{1}{1000}
+\end{align}
+This is done so that the target coordinates are more easily used by MATLAB and the robot.
