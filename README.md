@@ -64,3 +64,6 @@ cd build
 ./run.sh
 # Profit!
 ```
+## Video Showcase
+
+https://youtu.be/TekeDc8nFaY
