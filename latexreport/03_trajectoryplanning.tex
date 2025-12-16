@@ -106,7 +106,7 @@ Rather than using a constant deceleration in joint space to compute the require 
 \begin{align}
 	\text{steps}_{\text{follow}} &= round(0.5 \cdot f) \\
 	\mathbf{v}_\text{i} &= (1 - \frac{i}{\text{steps}_{\text{follow}}}) \cdot \mathbf{v}_\text{release} \\
-	\mathbf{\dot{q}}_\text{i} &= \mathbf{J}_\text{weighted,i} * \mathbf{v}_\text{i} \\
+	\mathbf{\dot{q}}_\text{i} &= \mathbf{J}_\text{weighted,i}^{+} * \mathbf{v}_\text{i} \\
 	\mathbf{q}_\text{i} &= \mathbf{q}_\text{i-1} + \mathbf{\dot{q}}_\text{i} \cdot \Delta t
 \end{align} 
 
