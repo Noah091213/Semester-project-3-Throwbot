@@ -2,6 +2,11 @@
 \label{chap:discussion}
 
 \section{Machine Vision}
+\subsection{Hough Transform}
+Instead of \texttt{cv::HoughCircles}, other methods like searching for specific patterns within the defined target or looking at the colors of the target were considered. However, since the target and many other objects within the scene are circular means that the Hough transform is both more versatile and more robust, together with it being very easy to implement with OpenCV compared to any specific algorithm hardcoded to this scenario.
+
+\subsection{Computing Homography}
+Another, perhaps more robust, way of selecting points to compute the homography would be to find the circular holes in the table using \texttt{Vision::findCircularObject} and use that as the points for the homography as they are also known positions and would be more precise than having the user click on the pixels that correspond to the table corners. Though this was not implemented as the solution that was first made worked well enough.
 
 \section{Trajectory Planning}
 Generating a trajectory for the ball and subsequently a path for the robot can be done in a multitude of ways, each with pros and cons. Therefore, one should consider what the objective is and define the problem in detail before choosing a method. The methods chosen for this project were all decided based on their expected impact on the project goal. 
