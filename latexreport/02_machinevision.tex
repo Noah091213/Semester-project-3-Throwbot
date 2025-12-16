@@ -1,9 +1,8 @@
 \chapter{Machine Vision}
 \label{chap:machinevision}
 Since the robot needs to be able to hit a specific target which can be in different places, a form of machine vision is needed. In particular some sort of algorhithm which can find the defined target.
-A Basler Pylon (Model Nr. acA 1440-220uc with C125-0418-5M lens) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries. 
+A Basler Pylon (Model Nr. acA 1440-220uc with C125-0418-5M lens) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries, together with OpenCV. 
 
-Since the camera distorts and warps the image because of the lense and the camera mounting position skews the perspective, calibration will be required. So, before the algorithm can be implemented this will need to be accounted for. Both the calibration and algorithm are implemented using OpenCV, a standard machine vision toolbox used for this exact purpose.
 
 \section{Calibration}
 The camera is modeled using the pinhole-model. This takes every point in 3D space and projects it through a single point, the pinhole, and hits the image plane forming a 2D image. However, in the real world light bends going through the lense so this needs to be modeled as well. 
