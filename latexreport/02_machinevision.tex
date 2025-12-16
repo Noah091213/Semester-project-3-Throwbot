@@ -92,13 +92,13 @@ A circle with a fixed radius $r$ is defined by the equation:
 \end{align}
 Where $(x, y)$ are the coordinates in the image space, and $(a, b)$ is the center of the circle. \newline
 
-When the radius of the circle is known, the Hough transform uses a two-dimensional parameter space corresponding to the possible center coordinates $(a, b)$. An accumulator array of this parameter space is initialized with all values set to zero.
+When the radius of the circle is known, the Hough transform uses a 2D parameter space corresponding to the possible center coordinates $(a, b)$. An accumulator array of this parameter space is initialized with all values set to zero.
 
 First, an edge detection algorithm is applied to the image to identify edge pixels. For each detected edge pixel $(x, y)$, the algorithm computes all possible center points $(a, b)$ for which a circle with the given radius $r$ passes through $(x, y)$. Each valid center location receives a vote by incrementing the corresponding cell in the accumulator array.
 
 In other words, each edge pixel contributes votes along a circular path in the parameter space. When multiple edge pixels belong to the same physical circle in the image, their votes intersect at a common location in the accumulator. This intersection produces a local maximum, which corresponds to the estimated center of the detected circle.
 
-Though the implementation in OpenCV uses a slightly more complex version where the radius $r$ can vary. However, all this does is expand the parameter space to three dimensions where the new axis is the different values $r$ can have.
+Though the implementation in OpenCV uses a slightly more complex version where the radius $r$ can vary. However, all this does is expand the parameter space to 3D where the new axis is the different values $r$ can have.
 
 \section{Implementation with OpenCV}
 The machine vision system is implemented as a dedicated C++ class, \texttt{Vision}, which handles camera access, calibration, and object detection. This design separates the vision processing from the main control logic, allowing the main loop to request object positions through a simple interface.
