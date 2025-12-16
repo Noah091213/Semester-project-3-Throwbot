@@ -1,9 +1,8 @@
 \chapter{Machine Vision}
 \label{chap:machinevision}
 Since the robot needs to be able to hit a specific target which can be in different places, a form of machine vision is needed. In particular some sort of algorhithm which can find the defined target.
-A Basler Pylon (Model Nr. acA 1440-220uc with C125-0418-5M lens) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries. 
+A Basler Pylon (Model Nr. acA 1440-220uc with C125-0418-5M lens) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries, together with OpenCV. 
 
-Since the camera distorts and warps the image because of the lense and the camera mounting position skews the perspective, calibration will be required. So, before the algorithm can be implemented this will need to be accounted for. Both the calibration and algorithm are implemented using OpenCV, a standard machine vision toolbox used for this exact purpose.
 
 \section{Calibration}
 The camera is modeled using the pinhole-model. This takes every point in 3D space and projects it through a single point, the pinhole, and hits the image plane forming a 2D image. However, in the real world light bends going through the lense so this needs to be modeled as well. 
@@ -72,7 +71,7 @@ Writing this out with coordinates $(i', j')$ for the image and $(i, j)$ for the 
 \end{pmatrix}
 \end{align}
 
-Note that the scaling factor can be chosen freely, so it is possible to set the last entry of the matrix $p_{22}$ to 1. This leaves 8 unknown entries in the matrix that needs to be found.
+Since the scaling factor can be chosen freely, it is possible to set the last entry of the matrix $p_{22}$ to 1. This leaves 8 unknown entries in the matrix that needs to be found.
 
 To solve for these unknowns, the scale factor $w$ can be eliminated by substituting the third equation ($w = p_{20}i' + p_{21}j' + 1$) into the first two. This results in the following two equations for a single point:
 \begin{align}
@@ -83,7 +82,7 @@ j = p_{10} \cdot i' + p_{11} \cdot j' + p_{12} - p_{20} \cdot j \cdot i' - p_{21
 \end{align}
 Since each pair of corresponding points $(i', j') \leftrightarrow (i, j)$ gives two equations, and there are 8 unknowns, means at least four point pairs are needed to solve the system. This is set up as a matrix equation $\mathbf{Ap} = \mathbf{b}$ \cite{CameraCalibration}, where $\mathbf{p}$  contains the unknown homography entries. Solving this gets the specific values for the homography matrix $\mathbf{H}$, which makes it possible to convert any pixel coordinate in the image to a physical coordinate on the table.
 
-\section{Finding circular objects}
+\section{Finding Circular Objects}
 Objects in the image are detected using the Hough transform, which is a feature extraction technique commonly used in machine vision. The purpose of this method is to detect geometric shapes that can be described by mathematical equations, such as straight lines or circles, even when the image is noisy or if edges are incomplete. For the purposes of this project, the circle variant is used as that is what best describes the defined target. \newline
 
 A circle with a fixed radius $r$ is defined by the equation:
