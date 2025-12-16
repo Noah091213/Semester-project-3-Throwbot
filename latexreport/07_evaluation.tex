@@ -23,7 +23,7 @@ The very first test was done to evaluate the impact of using a weighted Jacobian
 		$1\text{X}0100$ & 1-5mm Offset + Follow-through Clipped & 52 & 2 & (-50) \\
 		\midrule
 		\multicolumn{2}{l}{Targets hit (of 28 possible)} & 20 & 20 & \\
-		\multicolumn{3}{l}{Settings: Acceleration $5\ m/s^2$, Min. distance 20 cm} & & \\
+		\multicolumn{3}{l}{Settings: Acceleration $5\ rad/s^2$, Min. distance 20 cm} & & \\
 		\bottomrule
 	\end{tabular}
 \end{table}
@@ -38,7 +38,7 @@ Further simulation tests were done to evaluate the impact of the model's acceler
 	\label{tab:acceleration_test}
 	\begin{tabular}{rp{6.5cm}cclcl}
 		\toprule
-		\textbf{Status} & \textbf{Description} & \textbf{Acc. $4\ m/s^2$} & \multicolumn{2}{c}{\textbf{Acc. $5\ m/s^2$}} & \multicolumn{2}{c}{\textbf{Acc. $6\ m/s^2$}} \\
+		\textbf{Status} & \textbf{Description} & \textbf{Acc. $4\ rad/s^2$} & \multicolumn{2}{c}{\textbf{Acc. $5\ rad/s^2$}} & \multicolumn{2}{c}{\textbf{Acc. $6\ rad/s^2$}} \\
 		\midrule
 		21 & IK release position off by $> 5$ mm & 1423 & 1424 & (+1) & 1424 &  \\
 		23 & Joint limits exceeded in lead-up & 960 & 848 & (-112) & 741 & (-107) \\
@@ -61,7 +61,7 @@ Further simulation tests were done to evaluate the impact of the model's acceler
 	\label{tab:acceleration_test_35cm}
 	\begin{tabular}{rp{6.5cm}cclcl} 
 		\toprule
-		\textbf{Status} & \textbf{Description} & \textbf{Acc. $5\ m/s^2$} & \multicolumn{2}{c}{\textbf{Acc. $6\ m/s^2$}} & \multicolumn{2}{c}{\textbf{Acc. $7\ m/s^2$}} \\ 
+		\textbf{Status} & \textbf{Description} & \textbf{Acc. $5\ rad/s^2$} & \multicolumn{2}{c}{\textbf{Acc. $6\ rad/s^2$}} & \multicolumn{2}{c}{\textbf{Acc. $7\ rad/s^2$}} \\ 
 		\midrule
 		21 & IK release position off by $> 5$ mm & 652 & 652 & & 653 & (+1) \\
 		23 & Joint limits exceeded in lead-up & 2052 & 1945 & (-107) & 1818 & (-127) \\
