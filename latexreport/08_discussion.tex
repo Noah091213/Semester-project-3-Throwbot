@@ -1,6 +1,8 @@
 \chapter{Discussion}
 \label{chap:discussion}
 
+\section{Machine Vision}
+
 \section{Trajectory Planning}
 Generating a trajectory for the ball and subsequently a path for the robot can be done in a multitude of ways, each with pros and cons. Therefore, one should consider what the objective is and define the problem in detail before choosing a method. The methods chosen for this project were all decided based on their expected impact on the project goal. 
 
@@ -27,3 +29,16 @@ To improve robustness, an outlier detection procedure was applied by evaluating 
 
 After removing the outliers, the calibration was repeated, resulting in RMS errors between 0.0005 m and 0.0012 m. This significant reduction demonstrates the strong impact of outliers on transformation estimation and confirms the effectiveness of data filtering. The final transformation is therefore considered substantially more reliable and suitable for applications requiring accurate spatial alignment, highlighting the importance of careful data acquisition and validation in manually performed calibration procedures.
 
+\section{Results}
+The results from the testing phase gives an indication as to how each parameter impacts the system. Firstly, the testing was done by simulating throws using varied parameters to find a suitable setup for the real-world testing.
+ 
+\subsection{Weighted Jacobian}
+Using a weighted Jacobian forces some joints to be more active. The implementation of this was done to limit the use of Wrist 2, which is highly restricted by the safety limits. This courses an increased usage of the other joints which resulted in the joint limits being exceeded more often during the lead-up path. However, it was determined that the increase in non-clipped follow-through paths out-ways the negative impact during lead-up, and thus the weighted Jacobian was used for all further testing.
+
+\subsection{Acceleration}
+It is natural that the robot cannot accelerate at an infinite rate, but finding which acceleration is possible with limited error margins proved to be difficult. Testing the impact of acceleration on the kinematic model was the first step to find a suitable level. It was found that an acceleration of $5 rad/s^2$ seemed to be a good middle ground, as it allows for hits at almost all tested target points. Increasing the acceleration by 20\% to $6 rad/s^2$ only added one additional reachable target. Keeping the acceleration relatively low is desirable as to keep the robot form having to do violent movements. 
+
+As the robot path planning uses a static acceleration for the lead-up sequence, it is imperative that the robot is able to hit this acceleration profile as well. The movement control of the robot during the throw sequence is done by providing target speeds to the joints at each time step. The acceleration allowed to hit those targets must also be specified. Naturally, an acceleration lower than that of the model means it is impossible for the robot to hit the target speed at any point. Additionally, using an acceleration much higher than the model may lead to the robot stuttering as it will only need to accelerate at the start of each time step. A balance was found at a robot acceleration 25\% higher than the model, this provided the lowest mean absolute velocity error, meaning the robot's actual velocity was the closest to the model's.
+
+\subsection{Release Timing}
+It was quickly noted that there is a delay between calling the gripper to release the ball, and the ball physically being free from the robot. Determining this delay precisely was nearly impossible without any sensor feedback showing when contact with the ball was lost. Two approaches was used to estimate the delay, firstly, the gripper was filmed in slow motion at 480 frames per second, and secondly, testing was done using varied offsets. Using the slow motion video it was estimated that the delay was 40-50ms which was backed by the testing which showed the best results at an offset of 48ms. 
