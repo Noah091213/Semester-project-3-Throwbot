@@ -65,7 +65,7 @@ Figures~\ref{fig:FirstCalibration} and~\ref{fig:FinalCalibration}, respectively.
 
 
 \subsection{Robot Path Planning}
-With the homogeneous transformation matrix from world frame to base frame found, the robots required path can be determined. This process is done using Matlab with the Robotics System Toolbox (RST) \textcolor{red}{ref}. The path is split into two sections, what happens before the release point and what happens after. These two path sequences will be called lead-up and follow-through. 
+With the homogeneous transformation matrix from world frame to base frame found, the robots required path can be determined. This process is done using Matlab with the Robotics System Toolbox (RST) \cite{RoboticsToolbox}. The path is split into two sections, what happens before the release point and what happens after. These two path sequences will be called lead-up and follow-through. 
 
 \subsubsection{Inverse Kinematics}
 The first step in the process is determining what joint position will provide the required release position in Cartesian space while staying within the joint limits. This is done using the generalized inverse kinematics solver from RST. This solver uses an optimization algorithm to find a solution that best satisfies a list of requirements. Four things are provided to the solver; joint limits, desired TCP position, desired TCP orientation and desired joint configuration.
