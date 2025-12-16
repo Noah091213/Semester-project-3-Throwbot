@@ -1,12 +1,12 @@
 \chapter{Machine Vision}
 \label{chap:machinevision}
 Since the robot needs to be able to hit a specific target which can be in different places, a form of machine vision is needed. In particular some sort of algorhithm which can find the defined target.
-A Basler Pylon (model number?) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries. 
+A Basler Pylon (Model Nr. acA 1440-220uc with C125-0418-5M lens) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries. 
 
 Since the camera distorts and warps the image because of the lense and the camera mounting position skews the perspective, calibration will be required. So, before the algorithm can be implemented this will need to be accounted for. Both the calibration and algorithm are implemented using OpenCV, a standard machine vision toolbox used for this exact purpose.
 
 \section{Calibration}
-The camera is modeled using the pinhole-model (figure?). This takes every point in 3D space and projects it through a single point, the pinhole, and hits the image plane forming a 2D image. However, in the real world light bends going through the lense so this needs to be modeled as well. 
+The camera is modeled using the pinhole-model. This takes every point in 3D space and projects it through a single point, the pinhole, and hits the image plane forming a 2D image. However, in the real world light bends going through the lense so this needs to be modeled as well. 
 
 This is done using the cameras intrinsic matrix which contains the vertical and horizontal focal lengths and the cameras centerpoint (pinhole), together with five distortion coefficients to account for radial and tangential distortion. \newline
 
@@ -101,30 +101,28 @@ In other words, each edge pixel contributes votes along a circular path in the p
 Though the implementation in OpenCV uses a slightly more complex version where the radius $r$ can vary. However, all this does is expand the parameter space to 3D where the new axis is the different values $r$ can have.
 
 \section{Implementation with OpenCV}
-The machine vision system is implemented as a dedicated C++ class, \texttt{Vision}, which handles camera access, calibration, and object detection. This design separates the vision processing from the main control logic, allowing the main loop to request object positions through a simple interface.
+The machine vision system is implemented as a dedicated C++ class, \texttt{Vision}, which handles camera access, calibration, and object detection.
 
 \subsection{Calibration Implementation}
 The calibration process consists of two stages: intrinsic camera calibration and table plane rectification.
 
-Intrinsic Calibration: The \texttt{Vision::calibrateCam} function performs standard chessboard-based calibration. 20 images are captured, and the inner chessboard corners are detected using \texttt{cv::findChessboardCorners}. These corner locations are refined to sub-pixel accuracy using \texttt{cv::cornerSubPix} before being passed to \texttt{cv::calibrateCamera}. The resulting camera matrix and distortion coefficients are saved to a .yaml file with the tableID in the filename so that the calibration can be reused later and there can be seperate calibrations for each table if needed, as there can be differences in the camera setup.
+Using \texttt{Vision::calibrateCam} to find the intrinsics and distortion coefficients, 20 images are captured, and the inner chessboard corners are detected using \texttt{cv::findChessboardCorners}. These corner locations are refined to sub-pixel accuracy using \texttt{cv::cornerSubPix} before being passed to \texttt{cv::calibrateCamera}. The resulting camera matrix and distortion coefficients are saved to a .yaml file with the tableID in the filename so that the calibration can be reused later and there can be seperate calibrations for each table if needed, as there can be differences in the camera setup.
 
-Homography and Rectification: To map image coordinates to the physical table plane, the \texttt{Vision::calibrateTableCorners} function computes a homography matrix $\mathbf{H}$. The user selects the four corners of the table in the image using a mouse callback. These pixel coordinates are paired with known real-world table coordinates defined in millimeters.
+Then, to map image coordinates to the physical table plane, the \texttt{Vision::calibrateTableCorners} function computes a homography matrix $\mathbf{H}$. The user selects the four corners of the table in the image using a mouse callback. These pixel coordinates are paired with known real-world table coordinates defined in millimeters.
 
-The homography matrix is then computed using \texttt{cv::findHomography}, and because the destination coordinates are defined in millimeters, applying \texttt{cv::warpPerspective} produces a rectified, top-down view of the table where distances in the image directly correspond to physical distances on the table. This homography matrix is then also saved to a .yaml file.
+Afterwards, the homography matrix is computed using \texttt{cv::findHomography}, now applying \texttt{cv::warpPerspective} produces a rectified, top-down view of the table where distances in the image directly correspond to physical distances on the table. This homography matrix is then also saved to a .yaml file.
 
 \subsection{Object Detection}
-The circular target object is detected in the \texttt{Vision::findCircularObject} method using the following processing steps:
+The circular target object is detected in the \texttt{Vision::findCircularObject} method using the following steps:
 
-Undistortion and Rectification: The input image is first undistorted using the intrinsic camera matrix together with the distortion coefficients and then rectified using the homography matrix. This results in a top-down view of the table within the four user-defined corners of the table with perspective and distortion removed. (This is done before passing it to the function)
+First, the input image is first undistorted using the intrinsic camera matrix together with the distortion coefficients and then rectified using the homography matrix. This results in a top-down view of the table within the four user-defined corners of the table with perspective and distortion removed. (This is done before passing it to the function)
 
-Preprocessing: The rectified image is converted to grayscale and blurred using a Gaussian filter. This reduces image noise and improves the reliability of edge detection.
+Then, the rectified image is converted to grayscale and blurred using a Gaussian filter. This reduces image noise and improves the reliability of edge detection.
 
-Hough Transform: Circular features are detected using \texttt{cv::HoughCircles}.
-The threshold value for edge detection and the circle confidence value are provided by the main program (typically 50 and 30 respectively, though these values can be tweaked further). The minimum and maximum radius are set to 150 and 180 pixels to ensure that only the defined target is detected.
+At last, circular features are detected using \texttt{cv::HoughCircles}.
+The threshold value for edge detection and the circle confidence value are provided by the main program (typically 50 and 30 respectively). The minimum and maximum radius are set to 150 and 180 pixels to ensure that only the defined target is detected.
 
 \subsection{Table to World Transformation}
-The final step converts the detected target location into the world frame. Since the rectified image is scaled in millimeters, the center coordinates $(c_x, c_y)$ returned by the Hough transform represent physical distances from the table origin.
-
 The \texttt{Vision::tableToWorld} function transforms these coordinates into the world frame. This consists of a rotation matrix $\mathbf{R}$ and a unit conversion from millimeters to meters:
 \begin{align}
 	\mathbf{P}_{world} = \mathbf{R} \cdot
