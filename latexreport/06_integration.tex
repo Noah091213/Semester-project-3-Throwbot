@@ -1,2 +1,24 @@
 \chapter{Integration}
 \label{chap:integration}
+
+The final program takes all the separate parts, all encapsulated in classes, and merges it into a state machine that calls the various needed classes and functions. When run, both the connections to the gripper and UR5 is established, and a menu prompts the user with 5 options:
+\begin{itemize}[itemsep=0cm, parsep=0cm]
+    \item Calculate a trajectory
+    \item Throw the ball
+    \item Calibrate/Settings
+    \item Manual control
+    \item Exit program
+\end{itemize}
+
+To calculate the trajectory, the vision first finds a circle and the centre of said circle. This is the target. The Matlab script is then called, resulting in movement data points to use in the throw. All the data is then returned, sorted and stored, allowing the user to initiate the throw. Throwing the ball consists of 3 steps; picking up the ball, throwing it, and a prompting the user to save the real-time data from the throw.
+
+Because there was a possibility that different robot cells had to be used, a calibration menu is built in. This allows the user to calibrate a new table, or select from a list of earlier calibrations.
+
+Lastly manual control is available, allowing the user to execute smaller movement of both gripper and robot. All the options can be seen in the flowchart \ref{fig:systemOverview}
+
+\begin{wrapfigure}{r}{16cm}
+	\centering
+	\includegraphics[width = 16cm]{images/SystemOverview.png} 
+	\caption{System overview of the code}
+	\label{fig:systemOverview}
+\end{wrapfigure}
