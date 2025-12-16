@@ -106,11 +106,11 @@ The machine vision system is implemented as a dedicated C++ class, \texttt{Visio
 \subsection{Calibration Implementation}
 The calibration process consists of two stages: intrinsic camera calibration and table plane rectification.
 
-Using \texttt{Vision::calibrateCam} to find the intrinsics and distortion coefficients, 20 images are captured, and the inner chessboard corners are detected using \texttt{cv::findChessboardCorners}. These corner locations are refined to sub-pixel accuracy using \texttt{cv::cornerSubPix} before being passed to \texttt{cv::calibrateCamera}. The resulting camera matrix and distortion coefficients are saved to a .yaml file with the tableID in the filename so that the calibration can be reused later and there can be seperate calibrations for each table if needed, as there can be differences in the camera setup.
+Using \texttt{Vision::calibrateCam} to find the intrinsics and distortion coefficients, 20 images are captured, and the inner chessboard corners are detected using \texttt{cv::findChessboardCorners}. These corner locations are refined to sub-pixel accuracy using \texttt{cv::cornerSubPix} before being passed to \texttt{cv::calibrateCamera}. The resulting camera matrix and distortion coefficients are saved to a .yaml file with the tableID in the filename.
 
 Then, to map image coordinates to the physical table plane, the \texttt{Vision::calibrateTableCorners} function computes a homography matrix $\mathbf{H}$. The user selects the four corners of the table in the image using a mouse callback. These pixel coordinates are paired with known real-world table coordinates defined in millimeters.
 
-Afterwards, the homography matrix is computed using \texttt{cv::findHomography}, now applying \texttt{cv::warpPerspective} produces a rectified, top-down view of the table where distances in the image directly correspond to physical distances on the table. This homography matrix is then also saved to a .yaml file.
+Afterwards, the homography matrix is computed using \texttt{cv::findHomography}, now applying \texttt{cv::warpPerspective} produces a rectified, top-down view of the table where distances in the image directly correspond to physical distances on the table. This homography matrix is then also saved to a .yaml file with a tableID.
 
 \subsection{Object Detection}
 The circular target object is detected in the \texttt{Vision::findCircularObject} method using the following steps:
