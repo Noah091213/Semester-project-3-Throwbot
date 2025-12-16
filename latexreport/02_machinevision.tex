@@ -88,7 +88,7 @@ and machine intelligence 22 (2000).], where $\mathbf{p}$  contains the unknown h
 \section{Finding circular objects}
 Objects in the image are detected using the Hough transform, which is a feature extraction technique commonly used in machine vision. The purpose of this method is to detect geometric shapes that can be described by mathematical equations, such as straight lines or circles, even when the image is noisy or if edges are incomplete. For the purposes of this project, the circle variant is used as that is what best describes the defined target. \newline
 
-A circle with a fixed radius r is defined by the equation:
+A circle with a fixed radius $r$ is defined by the equation:
 \begin{align}
 (x-a)^2+(y-b)^2=r^2
 \end{align}
@@ -136,8 +136,8 @@ The \texttt{Vision::tableToWorld} function transforms these coordinates into the
 \begin{align}
 	\mathbf{P}_{world} = \mathbf{R} \cdot
 	\begin{pmatrix}
-		c_x \
-		c_y \
+		c_x \\
+		c_y \\
 		0
 	\end{pmatrix}
 	\cdot \frac{1}{1000}
