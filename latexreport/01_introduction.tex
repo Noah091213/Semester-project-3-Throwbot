@@ -20,23 +20,12 @@ Using a UR5 robot arm with an attached gripper, a camera, and software, the aim 
 \end{itemize}
 The solution is expected to consistently hit within the visual bullseye of the Velcro dart board, as seen in \textcolor{red}{figure \ref{fig:dartboard}}. Specifically, the center of the ball should be within 2 cm of the center of the bullseye. This accuracy would also allow the solution to hit within the opening of a standard American 16 oz red solo cup with a ping pong ball. The accuracy is accepted to be consistent, if at least 90\% of throws hit within the accepted target area.
 Additionally, the solution should require no human intervention once started, apart from placing the ball in a designated pickup area at the start of each throw.
-\newline
-\newline
-\newline
-\newline
 
 \section{Constraints \& Limitations}
 
-The developed system is subject to constraints originating from the physical hardware and from assumptions introduced during modelling and implementation. The robot motion is limited by the joint limits and Cartesian workspace boundaries defined by the UR5 safety configuration. Only motions that remain within these limits can be executed. The mechanical design of the gripper constrains the admissible release pose and orientation of the ball.
-\newline
-\newline
-Further limitations arise from modelling and implementation assumptions. The throwing motion is defined as a sequence consisting of lead-up, release, and follow-through phases. The robot–table calibration assumes a rigid and planar table surface and relies on manual TCP positioning during data acquisition. The calibration is treated as static.
-\newline
-\newline
-The vision subsystem assumes a fixed camera pose and stable illumination conditions. The homography-based mapping is valid only for points located on the table plane. Object detection is limited to circular targets within predefined size ranges.
-\newline
-\newline
-Trajectory planning assumes ideal projectile motion at the time of release and does not include aerodynamic effects such as air resistance or spin. Trajectories are computed offline and executed open-loop at a fixed control frequency. Operation of the system requires manual placement of the ball at a predefined pickup location prior to each trial.
+The project is subject to constraints originating from physical limitations, and limitations set internally. Safety configurations limits robot's motion by both joint limits and Cartesian boundaries, while the goal is limited to throwing in one general direction rather than 360 degrees around the robot.
+
+As only one camera is available at each robot cell, depth perception is limited and thus all target are assumed to be located at table height. All software will be developed and tested in a Linux based environment, support for any other operating system will not be considered. 
 
 \section{System Overview}
 
