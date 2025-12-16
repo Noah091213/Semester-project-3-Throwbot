@@ -12,18 +12,18 @@ Using a UR5 robot arm with an attached gripper, a camera, and software, the aim 
 
 \section{Problem Definition} \label{sec:ProblemDefinition}
 
-\textbf{Make a UR5 robot arm throw an object at a designated target}
-\begin{itemize}
+\textbf{Making a UR5 robot arm throw an object at a designated target}
+\begin{itemize}[noitemsep]
 	\item Identify the target point using machine vision
 	\item Plan a trajectory for the object using physics and kinematics
-	\item Control a UR5 and gripper based on modeled trajectory
+	\item Control a UR5 and gripper based on the modeled trajectory
 \end{itemize}
-The solution is expected to consistently hit within the visual bullseye of the Velcro dart board, as seen in \textcolor{red}{figure \ref{fig:dartboard}}. Specifically, the center of the ball should be within 2 cm of the center of the bullseye. This accuracy would also allow the solution to hit within the opening of a standard American 16 oz red solo cup with a ping pong ball. The accuracy is accepted to be consistent, if at least 90\% of throws hit within the accepted target area.
+The solution is expected to consistently hit within the visual bullseye of the Velcro dart board, as seen in figure \ref{fig:dartboard}. Specifically, the center of the ball should be within 2 cm of the center of the bullseye. This accuracy would also allow the solution to hit within the opening of a standard American 16 oz red solo cup with a ping pong ball. The accuracy is accepted to be consistent, if at least 90\% of throws hit within the accepted target area.
 Additionally, the solution should require no human intervention once started, apart from placing the ball in a designated pickup area at the start of each throw.
 
 \section{Constraints \& Limitations}
 
-The project is subject to constraints originating from physical limitations, and limitations set internally. Safety configurations limits robot's motion by both joint limits and Cartesian boundaries, while the goal is limited to throwing in one general direction rather than 360 degrees around the robot.
+The project is subject to constraints originating from physical limitations, and limitations set both externally and internally. Safety configurations limit the robot's motion in both joint and Cartesian space, while the project goal is limited to throwing in one general direction rather than 360 degrees around the robot.
 
 As only one camera is available at each robot cell, depth perception is limited and thus all target are assumed to be located at table height. All software will be developed and tested in a Linux based environment, support for any other operating system will not be considered. 
 
@@ -41,8 +41,14 @@ The robot control module executes the planned trajectory by commanding the robot
 %system billede her 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.7\textwidth]{images/SystemThrow.png}
+	\includegraphics[width=1\textwidth]{images/SystemThrow.png}
 	\caption{System overview of the robotic throwing setup.}
 	\label{fig:SystemThrow}
 \end{figure}
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.4\textwidth]{images/Dartboard.png}
+	\caption{The Velcro Dart Board}
+	\label{fig:dartboard}
+\end{figure}
