@@ -80,10 +80,10 @@ i = p_{00} \cdot i' + p_{01} \cdot j' + p_{02} - p_{20} \cdot i \cdot i' - p_{21
 \begin{align}
 j = p_{10} \cdot i' + p_{11} \cdot j' + p_{12} - p_{20} \cdot j \cdot i' - p_{21} \cdot j \cdot j'
 \end{align}
-Since each pair of corresponding points $(i', j') \leftrightarrow (i, j)$ gives two equations, and there are 8 unknowns, means at least four point pairs are needed to solve the system. This is set up as a matrix equation $\mathbf{Ap} = \mathbf{b}$ \cite{CameraCalibration}, where $\mathbf{p}$  contains the unknown homography entries. Solving this gets the specific values for the homography matrix $\mathbf{H}$, which makes it possible to convert any pixel coordinate in the image to a physical coordinate on the table.
+Since each pair of corresponding points $(i', j') \leftrightarrow (i, j)$ gives two equations, and there are 8 unknowns, at least four point pairs are needed to solve the system. This is set up as a matrix equation $\mathbf{Ap} = \mathbf{b}$ \cite{CameraCalibration}, where $\mathbf{p}$  contains the unknown homography entries. Solving this gets the specific values for the homography matrix $\mathbf{H}$, which makes it possible to convert any pixel coordinate in the image to a physical coordinate on the table.
 
 \section{Finding Circular Objects}
-Objects in the image are detected using the Hough transform, which is a feature extraction technique commonly used in machine vision. The purpose of this method is to detect geometric shapes that can be described by mathematical equations, such as straight lines or circles, even when the image is noisy or if edges are incomplete. For the purposes of this project, the circle variant is used as that is what best describes the defined target. \newline
+Objects in the image are detected using the Hough transform, which is a feature extraction technique commonly used in machine vision. The purpose of this method is to detect geometric shapes that can be described by mathematical equations, such as straight lines or circles, even when the image is noisy or if edges are incomplete. For the purposes of this project, the circle variant is used, as it best describes the defined target. \newline
 
 A circle with a fixed radius $r$ is defined by the equation:
 \begin{align}
@@ -114,7 +114,7 @@ Afterwards, the homography matrix is computed using \texttt{cv::findHomography},
 \subsection{Object Detection}
 The circular target object is detected in the \texttt{Vision::findCircularObject} method using the following steps:
 
-First, the input image is first undistorted using the intrinsic camera matrix together with the distortion coefficients and then rectified using the homography matrix. This results in a top-down view of the table within the four user-defined corners of the table with perspective and distortion removed. (This is done before passing it to the function)
+First, the input image is undistorted using the intrinsic camera matrix together with the distortion coefficients and then rectified using the homography matrix. This results in a top-down view of the table within the four user-defined corners of the table with perspective and distortion removed (this is done before passing it to the function).
 
 Then, the rectified image is converted to grayscale and blurred using a Gaussian filter. This reduces image noise and improves the reliability of edge detection.
 

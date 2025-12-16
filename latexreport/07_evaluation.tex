@@ -1,9 +1,9 @@
 \chapter{Results}
 \label{chap:results}
 
-Testing the system and its components can be done in many ways. Because so many parameters can be tweaked, it was important to test many of them to determine their individual effects in the system as a whole. Initial testing was done using simulated throws, by running the trajectory planner, including the ball ballistics and robot path planning, with a range of release point and targets. The results from all tests will be discussed in chapter \ref{chap:discussion}.
+Testing the system and its components can be done in many ways. Because so many parameters can be tweaked, it was important to test many of them to determine their individual effects on the system as a whole. The results from all tests will be discussed in chapter \ref{chap:discussion}.
 
-The very first test was done to evaluate the impact of using a weighted Jacobian to influence which joints were most active during the throw movement. Table \ref{tab:jacobian_w_vs_u} shows the results from 5600 simulated throws across a range of release points and targets, the distribution of which can be seen in figure \ref{fig:subfig:Short}. 
+Initial testing was done using simulated throws, by running the trajectory planner, including the ball ballistics and robot path planning, with a range of release point and targets. The very first test was done to evaluate the impact of using a weighted Jacobian to influence which joints were most active during the throw movement. Table \ref{tab:jacobian_w_vs_u} shows the results from 5600 simulated throws across a range of release points and targets, the distribution of which can be seen in figure \ref{fig:subfig:Short}. 
 
 \begin{table}[h!]
 	\centering
@@ -30,7 +30,7 @@ The very first test was done to evaluate the impact of using a weighted Jacobian
 
 Using a waited Jacobian, which sets the cost of using Wrist 2 at twice the amount of all other joints, impacts both the lead-up and follow-through sequence. During lead-up, it becomes more common that a joint limit is exceeded, likely because some joints have to move more to compensate for the minimized movement in Wrist 2. However, when a path is found, it is more likely to be clean, i.e. not experiencing any clipping in the follow-through sequence. Both tests were able to reach the same amount of targets, with the targets near the side of the table being the unreachable ones.
 
-Further simulation tests were done to evaluate the impact of the model's acceleration. Since all robot path planning is calculated based on the models constant acceleration, changing this one parameter will likely dictate which targets are reachable. Table \ref{tab:acceleration_test} shows the impact of 3 different accelerations when enforcing a minimum horizontal distance of 20cm between release and target point. Additionally, table \ref{tab:acceleration_test_35cm} shows testing with a minimum distance of 35cm. The distribution of release points and targets for these tests can be seen in figure \ref{fig:subfig:Short} and \ref{fig:subfig:Long} respectively.
+Further simulation tests were done to evaluate the impact of the model's acceleration. Since all robot path planning is calculated based on the model's constant acceleration, changing this one parameter will likely dictate which targets are reachable. Table \ref{tab:acceleration_test} shows the impact of 3 different accelerations when enforcing a minimum horizontal distance of 20cm between release and target point. Additionally, table \ref{tab:acceleration_test_35cm} shows testing with a minimum distance of 35cm. The distribution of release points and targets for these tests can be seen in figure \ref{fig:subfig:Short} and \ref{fig:subfig:Long} respectively.
 
 \begin{table}[h!]
 	\centering
@@ -112,7 +112,7 @@ The tests show similar results, where increasing the acceleration decreases the 
 	\label{fig:TableOverview}
 \end{figure}
 
-In addition to the simulated test throws, a series of real-world throws were also conducted. Since the model and robot can have different accelerations applied to them, the relationship between the two could also impact the robots precision. Figure \ref{fig:MAE_Velocity} shows the Mean Absolute Error in $rad/s$ across different relative accelerations. The model uses a constant acceleration of $5 rad/s^2$ while the robots acceleration is varied relative the model's. 
+In addition to the simulated test throws, a series of real-world throws were also conducted. Since the model and robot can have different accelerations applied to them, the relationship between the two could also impact the robot's precision. Figure \ref{fig:MAE_Velocity} shows the Mean Absolute Error in $rad/s$ across different relative accelerations. The model uses a constant acceleration of $5 rad/s^2$ while the robots acceleration is varied relative the model's. 
 
 \begin{figure}[h!]
 	\centering
@@ -123,7 +123,7 @@ In addition to the simulated test throws, a series of real-world throws were als
 
 It is seen that a slight increase in the robots acceleration relative to the model's, generally decreases the absolute mean error. For all further tests, the robots acceleration will be set to 25\% more than the model's.
 
-Table \ref{tab:test_throw} shows the results of 100 throws across different target objects and release timings. The two targets used were the dartboard and the plastic ring with a diameter similar to the bullseye of the dartboard. The release offset determines when the gripper is called to release the ball, relative to the time step in which the ball should lose contact with the robot, i.e. if the ball should be in the air at time step 35, the gripper is called at time step 33 when the offset is 2. The results are segmented into misses, boundary hits and clean hits. A clean hit is defined such that the entire ball must make it inside the bullseye or ring. A boundary hit is counted when the ball is partially inside the bullseye or hits the ring itself. A miss is noted if the ball does not meet one of the two hit requirements.
+Table \ref{tab:test_throw} shows the results of 100 throws across different target objects and release timings. The two targets used were the dart board and the plastic ring with a diameter similar to the bullseye of the dart board. The release offset determines when the gripper is called to release the ball, relative to the time step in which the ball should lose contact with the robot, i.e. if the ball should be in the air at time step 35, the gripper is called at time step 33 when the offset is 2. The results are segmented into misses, boundary hits and clean hits. A clean hit is defined such that the entire ball must make it inside the bullseye or ring. A boundary hit is counted when the ball is partially inside the bullseye or hits the ring itself. A miss is noted if the ball does not meet one of the two hit requirements.
 
 \begin{table}[h!]
 	\centering
