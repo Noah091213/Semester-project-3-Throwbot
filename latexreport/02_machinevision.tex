@@ -83,12 +83,12 @@ i = p_{00} \cdot i' + p_{01} \cdot j' + p_{02} - p_{20} \cdot i \cdot i' - p_{21
 j = p_{10} \cdot i' + p_{11} \cdot j' + p_{12} - p_{20} \cdot j \cdot i' - p_{21} \cdot j \cdot j'
 \end{align}
 Since each pair of corresponding points $(i', j') \leftrightarrow (i, j)$ gives two equations, and there are 8 unknowns, means at least four point pairs are needed to solve the system. This is set up as a matrix equation $\mathbf{Ap} = \mathbf{b}$ [reference here, [1] Zhang, Zhengyou, A flexible new technique for camera calibration, IEEE Transactions on pattern analysis
-and machine intelligence 22 (2000).], where $\mathbf{p}$  contains the unknown homography entries. By solving this, we get the specific values for the homography matrix $\mathbf{H}$, which allows us to convert any pixel coordinate in the image to a physical coordinate on the table.
+and machine intelligence 22 (2000).], where $\mathbf{p}$  contains the unknown homography entries. Solving this gets the specific values for the homography matrix $\mathbf{H}$, which makes it possible to convert any pixel coordinate in the image to a physical coordinate on the table.
 
 \section{Finding circular objects}
 Objects in the image are detected using the Hough transform, which is a feature extraction technique commonly used in machine vision. The purpose of this method is to detect geometric shapes that can be described by mathematical equations, such as straight lines or circles, even when the image is noisy or if edges are incomplete. For the purposes of this project, the circle variant is used as that is what best describes the defined target. \newline
 
-A circle with a fixed radius r is defined by the equation:
+A circle with a fixed radius $r$ is defined by the equation:
 \begin{align}
 (x-a)^2+(y-b)^2=r^2
 \end{align}
@@ -136,8 +136,8 @@ The \texttt{Vision::tableToWorld} function transforms these coordinates into the
 \begin{align}
 	\mathbf{P}_{world} = \mathbf{R} \cdot
 	\begin{pmatrix}
-		c_x \
-		c_y \
+		c_x \\
+		c_y \\
 		0
 	\end{pmatrix}
 	\cdot \frac{1}{1000}
