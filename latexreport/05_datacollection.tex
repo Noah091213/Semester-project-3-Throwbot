@@ -12,11 +12,11 @@ For each calculated throw, a comma-separated values (CSV) file is generated. The
 \end{itemize}
 During the execution of the movement, the actual joint positions and velocities achieved by the UR5 are requested from the robot controller using the RTDE Receive Interface. These real-time values are simultaneously logged to the same CSV file. This combined dataset allows for a direct comparative analysis between the modeled throw (MATLAB output) and the executed throw (RTDE feedback). 
 
-\begin{wrapfigure}{R}{6.5cm}
+To physically see where the ball ended up, a Velcro target is used. This target is placed on a white background, to distinguish between it and the table easier, and a 3d printed set of rings were placed at the centre. These rings are needed as the Velcro of the target became less sticky, allowing bounces and more movement than we could measure effectively. The rings start at 120mm inner diameter and go all the way down to 45mm. These rings go down in diameter by 1 cm for each ring, the only exception being the “ideal target” ring. This ideal was decided in the beginning of the project, needing to hit within 2cm of the centre, resulting in a circle with a 74mm diameter. This ring was made slightly thicker, making the step larger, but also more stable as to not move this ring. The way these rings are used is by adding them one by one into the previous, allowing for testing of smaller targets and higher precision. 
+
+\begin{figure}
 	\centering
-	\includegraphics[width = 6.5cm]{images/PlasticRings.png} 
+	\includegraphics[width = 0.55\textwidth]{images/PlasticRings.png} 
 	\caption{3D printed rings used for precision testing}
 	\label{fig:targetRings}
-\end{wrapfigure}
-
-To physically see where the ball ended up, a Velcro target is used. This target is placed on a white background, to distinguish between it and the table easier, and a 3d printed set of rings were placed at the centre. These rings are needed as the Velcro of the target became less sticky, allowing bounces and more movement than we could measure effectively. The rings start at 120mm inner diameter and go all the way down to 45mm. These rings go down in diameter by 1 cm for each ring, the only exception being the “ideal target” ring. This ideal was decided in the beginning of the project, needing to hit within 2cm of the centre, resulting in a circle with a 74mm diameter. This ring was made slightly thicker, making the step larger, but also more stable as to not move this ring. The way these rings are used is by adding them one by one into the previous, allowing for testing of smaller targets and higher precision. 
+\end{figure}

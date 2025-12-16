@@ -1,6 +1,6 @@
 \chapter{Conclusion}
 \label{chap:conclusion}
-The objective of this project was to design and implement a robotic system capable of detecting a target on a table and executing a throwing motion toward the detected target using a UR5 robot. This required the integration of robot–table calibration, machine vision, trajectory planning, and robot control within a unified framework.
+The objective of this project was to design and implement a robotic system capable of detecting a target on a table and executing a throwing motion toward the detected target using a UR5 robot. This required the integration of calibration, machine vision, trajectory planning, and robot control within a unified framework.
 
 A robot–table calibration based on an SVD-based least-squares method was implemented, enabling transformation between world-frame and robot-frame coordinates with sufficient accuracy to support vision and motion planning. A vision-based target detection approach using a fixed camera and homography mapping allowed target positions on the table plane to be expressed in world coordinates and used as input to the trajectory planning module. Throwing trajectories were generated using a simplified projectile motion model and executed using predefined lead-up, release, and follow-through phases within the robot’s kinematic and safety constraints.
 

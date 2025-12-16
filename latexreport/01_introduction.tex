@@ -8,7 +8,7 @@ This project will try to use technology in such a way. It will try to use method
 
 \section{Project Goals}
 
-Using a UR5 robot arm with an attached gripper, a camera, and software, the aim of this project is to pick up a ball and throw it at a dart board placed within view of the camera. For safety reasons the ball thrown is light weight, made of plastic and is about the size of a ping pong ball. To allow it to stick to the dart board, it is coated with Velcro, just as the dart board is. Success will be measured based on how far the average throw is from the bullseye.
+Using a UR5 robot arm with an attached gripper, a camera, and software, the aim of this project is to pick up a ball and throw it at a dart board placed within view of the camera. For safety reasons the ball thrown is light weight, made of plastic and is about the size of a ping pong ball. To allow it to stick to the dart board, it is coated with Velcro, just as the dart board is. Success will be measured based on how likely a throw is to be within the bullseye.
 
 \section{Problem Definition} \label{sec:ProblemDefinition}
 
@@ -18,8 +18,14 @@ Using a UR5 robot arm with an attached gripper, a camera, and software, the aim 
 	\item Plan a trajectory for the object using physics and kinematics
 	\item Control a UR5 and gripper based on the modeled trajectory
 \end{itemize}
-The solution is expected to consistently hit within the visual bullseye of the Velcro dart board, as seen in figure \ref{fig:dartboard}. Specifically, the center of the ball should be within 2 cm of the center of the bullseye. This accuracy would also allow the solution to hit within the opening of a standard American 16 oz red solo cup with a ping pong ball. The accuracy is accepted to be consistent, if at least 90\% of throws hit within the accepted target area.
-Additionally, the solution should require no human intervention once started, apart from placing the ball in a designated pickup area at the start of each throw.
+The solution is expected to consistently hit within the visual bullseye of the Velcro dart board, as seen in figure \ref{fig:dartboard}. Specifically, the center of the ball should be within 2 cm of the center of the bullseye. This accuracy would also allow the solution to hit within the opening of a standard American 16 oz red solo cup with a ping pong ball. The accuracy is accepted to be consistent, if at least 90\% of throws hit within the accepted target area. In the spirit of the project, a throw will be defined such that it must have an upwards initial trajectory and must cover at least 20cm in horizontal distance.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.35\textwidth]{images/Dartboard.png}
+	\caption{The Velcro Dart Board}
+	\label{fig:dartboard}
+\end{figure}
 
 \section{Constraints \& Limitations}
 
@@ -29,26 +35,17 @@ As only one camera is available at each robot cell, depth perception is limited 
 
 \section{System Overview}
 
-The system developed in this project integrates several components that enable the robot to perceive its environment, plan feasible trajectories, and execute accurate motions within a calibrated workspace. The system is structured around five core modules: machine vision, robot–table calibration, trajectory planning, kinematics, and robot control, which operate sequentially and are closely interconnected.
+The system developed in this project integrates several components that enable the robot to perceive its environment, plan feasible trajectories, and execute accurate motions within a calibrated workspace. The system is structured around five core modules: machine vision, calibration, trajectory planning, kinematics, and robot control, which operate sequentially and are closely interconnected.
 
-The machine vision module captures images of the table surface and detects the center of the target on the dartboard. This position is initially expressed in the camera coordinate frame and subsequently transformed into world-frame coordinates. The resulting target position is then used as input for the subsequent planning and control stages.
+The machine vision module captures images of the table surface and detects the center of the target on the dartboard. This position is initially expressed in the table frame and subsequently transformed into world-frame coordinates. The resulting target position is then used as input for the subsequent planning and control stages.
 
 Trajectory planning generates a feasible motion from the robot’s current configuration to the target location while respecting kinematic and workspace constraints. Kinematic computations are used to convert the planned end-effector motion into corresponding joint configurations through inverse kinematics, with forward kinematics used for verification.
 
 The robot control module executes the planned trajectory by commanding the robot joints to follow the desired motion profile. Together, these modules form a modular and integrated system that enables reliable operation within the table workspace. An overview of the complete experimental setup is shown in Figure~\ref{fig:SystemThrow}.
 
-
-%system billede her 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{images/SystemThrow.png}
 	\caption{System overview of the robotic throwing setup.}
 	\label{fig:SystemThrow}
-\end{figure}
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.4\textwidth]{images/Dartboard.png}
-	\caption{The Velcro Dart Board}
-	\label{fig:dartboard}
 \end{figure}

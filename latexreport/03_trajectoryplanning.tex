@@ -3,25 +3,12 @@
 
 \section{Physics}
 
-The first part of finding the trajectory of an object is to find its path given two coordinates, the release and target coordinate. With the given coordinates yaw, pitch and start velocity ($\mathbf{v}_{\text{0}}$) can be calculated for the release position.
-%note: mention that our calcualtion are in -x?.
-%note: do i explain arctan2?
-Assuming that the release coordinate is in (0. 0. 0) yaw is calculated with $\arctan_2(x, y)$. 
-%note: explin how the funciton? (i dont know how)
-To calculate $\mathbf{v}_{\text{0}}$ the following function, where $\theta_z$ is pitch, is used: 
+The first part of finding the trajectory of an object is to find its path given two coordinates, the release and target coordinate. With the given coordinates yaw, pitch and start velocity ($\mathbf{v}_{\text{0}}$) can be calculated for the release position. Assuming that the release coordinate is in (0. 0. 0) yaw is calculated with $\arctan_2(x, y)$. To calculate $\mathbf{v}_{\text{0}}$ the following function, where $\theta_z$ is pitch, is used: 
 \begin{align}
 	v_0 = \sqrt{\frac{g \cdot \sqrt{x² + y²}}{2 \cos^2(\theta_z) (\sqrt{x² + y²} \tan(\theta_z) - z)}}
 \end{align}
 
-%note:  22.5 deg minimum pitch?
-%note:  1000 steps for pitch?
-To find the pitch which has the lowest $\mathbf{v}_{\text{0}}$. It is needed to run through all pitches that make sense and calculate the $\mathbf{v}_{\text{0}}$ for each pitch. Pitches where it is needed to find a path is $[0^\circ, 90^\circ[$. as finding a path below $0^\circ$ is not always possible and finding path with $90^\circ$ or above is impossible unless the target is below or behind the release point.
-
-
-
-
-
-
+To find the pitch which has the lowest $\mathbf{v}_{\text{0}}$, 1000 pitches spaced linearly between 22.5 and 90 degrees are checked. 
  
 \section{Kinematics}
 Given the object trajectory required to hit the target, the movement of the robot can be determined such that the object reaches the desired velocity and direction at the point of release. By moving the tool center point (TCP) and there-by the object, the goal is to have the TCP at the exact location of the release point at the same time as the velocity of the TCP matches the desired velocity and direction of the ball trajectory. 
@@ -33,9 +20,7 @@ To enable accurate positioning of the robot relative to points defined on the ta
 
 The transformation was estimated using 52 reference points on the table, for which corresponding positions were recorded in both the world frame and the robot frame. A dedicated calibration tool was mounted on the robot tool flange to improve TCP alignment, and the resulting datasets were imported into MATLAB. Prior to estimation, both point sets were centered by subtracting their respective centroids to improve numerical robustness.
 
-The rigid-body transformation was computed using an SVD-based least-squares method. The rotation matrix was obtained from the SVD of a correlation matrix constructed from the centered datasets, while the translation vector was computed from the difference between the centroids. The calibration quality was evaluated using the RMS error. The initial calibration resulted in RMS errors between 0.1991 m and 1.3078 m, revealing the presence of inconsistent measurements. After removing four identified outliers, the calibration was repeated, reducing the RMS error to the range 0.0005 m to 0.0012 m. The results of the initial and repeated calibration procedures are shown in Figures~\ref{fig:FirstCalibration} and~\ref{fig:FinalCalibration}, respectively.
-
-% to billeder her side by side med billede tekst 
+The rigid-body transformation was computed using an singular value decomposition (SVD) based least-squares method. The rotation matrix was obtained from the SVD of a correlation matrix constructed from the centered datasets, while the translation vector was computed from the difference between the centroids. The calibration quality was evaluated using the root mean square (RMS) error. The initial calibration resulted in RMS errors between 0.1991 m and 1.3078 m, revealing the presence of inconsistent measurements. After removing four identified outliers, the calibration was repeated, reducing the RMS error to the range 0.0005 m to 0.0012 m. The results of the initial and repeated calibration procedures are shown in Figures~\ref{fig:FirstCalibration} and~\ref{fig:FinalCalibration}, respectively.
 
 \begin{figure}[htbp]
 	\centering
@@ -69,9 +54,9 @@ To determine the joint positions for the release point, a generalized inverse ki
 
 \textbf{Desired Joint Pose}: Set to the center of each joint's movement range to maximize available range of motion in both directions.
 
-If a solution is found, it is validated against a 5 mm tolerance; the Euclidean distance between the desired and computed TCP positions. If the solver fails, an error code is generated.
+The weights are arbitrarily set based on the inputs' relative importance for path planning, with joint limits being the single most important factor. TCP position outweighs orientation, as it is more important to be at the correct position. If a solution is found, it is validated against a 5 mm tolerance; the Euclidean distance between the desired and computed TCP positions. If the solver fails, an error code is generated.
 
-\subsubsection{Joint velocity at release}With the joint pose for the release position found, the required joint velocities at release can be determined based on the ball's desired velocity magnitude ($vel$) and direction vector ($\mathbf{dir}$). The desired TCP linear velocity is defined as $\mathbf{v}_{\text{release}} = vel \cdot \mathbf{dir}$. First, the Jacobian ($\mathbf{J}$) is found for the joint pose. This $6 \times 6$ matrix is derived from the robot's kinematic model using the MATLAB function provided by Inigo Iturrate. The first three rows determine the TCP linear velocity, and the last three rows determine the TCP angular velocity. For this task, only the linear velocity portion is necessary, making $\mathbf{J}_{\text{vel}}$ a $3 \times 6$ matrix. Since the UR5 is kinematically redundant for this task (6 joints, 3 required outputs), and because certain joints (like Wrist 2) are highly restricted, a weighted pseudo-inverse of the Jacobian is used. This requires defining a diagonal joint cost matrix, $\mathbf{W}$, where higher values impose a greater penalty on the corresponding joint velocity. With the cost matrix, the weighted pseudo-inverse ($\mathbf{J}_{\text{weighted}}^{+}$) is calculated using the following formula:
+\subsubsection{Joint velocity at release}With the joint pose for the release position found, the required joint velocities at release can be determined based on the ball's desired velocity magnitude ($vel$) and direction vector ($\mathbf{dir}$). The desired TCP linear velocity is defined as $\mathbf{v}_{\text{release}} = vel \cdot \mathbf{dir}$. First, the Jacobian ($\mathbf{J}$) is found for the joint pose. This $6 \times 6$ matrix is derived from the robot's kinematic model using the provided MATLAB function \cite{matlabfunction}. The first three rows determine the TCP linear velocity, and the last three rows determine the TCP angular velocity. For this task, only the linear velocity portion is necessary, making $\mathbf{J}_{\text{vel}}$ a $3 \times 6$ matrix. Since the UR5 is kinematically redundant for this task (6 joints, 3 required outputs), and because certain joints (like Wrist 2) are highly restricted, a weighted pseudo-inverse of the Jacobian is used. This requires defining a diagonal joint cost matrix, $\mathbf{W}$, where higher values impose a greater penalty on the corresponding joint velocity. With the cost matrix, the weighted pseudo-inverse ($\mathbf{J}_{\text{weighted}}^{+}$) is calculated using the following formula:
 \begin{equation}
 	\mathbf{J}_{\text{weighted}}^{+} = \mathbf{W}^{-1} \mathbf{J}_{\text{vel}}^T (\mathbf{J}_{\text{vel}} \mathbf{W}^{-1} \mathbf{J}_{\text{vel}}^T)^{-1}
 \end{equation}
@@ -96,7 +81,7 @@ The joint requiring the most steps determines the total steps for the trajectory
 	\mathbf{q}_{i,j} &= \mathbf{q}_{i-1,j} - \mathbf{\dot{q}}_{i,j} \cdot \Delta t
 \end{align}
 
-The $\max(\cdot, 0)$ function ensures that joints which complete their movement faster than the global $\text{steps}_{\text{max}}$ will have their velocity clipped to zero for the remainder of the trajectory, thereby synchronizing the start and end of all joint movements. With the full lead-up sequence determined it can now be checked against the joint limits. Each joint's positions is checked against their respective limits, if any joint exceeds the boundaries, an error code is registered.
+The $\max(\cdot, 0)$ function ensures that joints which complete their movement faster than the global $\text{steps}_{\text{max}}$ will have their velocity clipped to zero for the remainder of the trajectory, thereby synchronizing the start and end of all joint movements. With the full lead-up sequence determined it can now be checked against the joint limits. Each joint's positions is checked against their respective limits, if any joint exceeds the boundaries, an error code is registered (see section \ref{statuscode}).
 
 \subsubsection{Follow-through}
 The follow-through is determined in Cartesian space rather than joint space to allow the TCP to decelerate in a linear motion in the direction of the ball's initial trajectory. This is done to allow for small errors in the timing of the release. Should the ball be released slightly too late, it will still be traveling in the correct direction at a reduced speed, negating some of the impact of the delayed release. The method for determining the follow-through path is similar to the method used for the lead-up, but since it is done in Cartesian space, some changes are required.
@@ -113,9 +98,9 @@ Rather than using a constant deceleration in joint space to compute the require 
 Since the follow-through trajectory is generated in Cartesian space, it is not limiting the amount of space needed in joint space. Therefore, the joints' positions at each time step is checked against their respective limits, and their velocity set to 0 if the joint gets within 5 degrees of the limit. This does mean that some follow-through trajectories will not be linear in Cartesian space for the full movement, but will stay linear for as long as the joints allow.
 
 \subsubsection{Safety check}
-With the lead-up, release point, and follow-through generated the entire sequence can be combined to create the full movement. Since only the joint limits have been checked during the generation of the movement, the TCP limits in Cartesian space must be checked by the end to ensure that movement will not push the TCP outside its boundaries. This is done by finding the TCP position at each time step using forward kinematics and checking its x, y and z coordinate against the limits. If any position is outside the limits, an error code is registered.
+With the lead-up, release point, and follow-through generated the entire sequence can be combined to create the full movement. Since only the joint limits have been checked during the generation of the movement, the TCP limits in Cartesian space must be checked by the end to ensure that movement will not push the TCP outside its boundaries. This is done by finding the TCP position at each time step using forward kinematics and checking its x, y and z coordinate against the limits. If any position is outside the limits, an error code is registered (see section \ref{statuscode}).
 
-\subsubsection{Status codes}
+\subsubsection{Status codes} \label{statuscode}
 Path generation utilizes two code types to track safety and accuracy. Error codes (2x) indicate a safety limit breach (e.g., TCP or joint limits) that terminates generation. Status codes (1xxxxx) allow generation to continue but flag imperfections; while 100000 represents a nominal path, each subsequent digit tracks a specific deviation, such as the IK release offset (mm) or velocity loss (\%).
 
 \begin{itemize}[noitemsep]
@@ -137,7 +122,7 @@ As the generation of both the ball's trajectory and the robot's movement is dete
 \subsection{MATLAB Communication}
 To run the MATLAB script, the MATLAB Engine API is used. This allows the C++ program to start the MATLAB script, pass data over, and return any data from the calculations. 
 MATLAB Engine works by starting the script as a separate process, passing the data through the API thus copying the data in a format MATLAB can understand, running the script through, returning it through the API and lastly converting the data to something C++ can understand and closing the MATLAB process. 
-Because MATLAB Engine relies on a very specific character to run, the program must be started through a shell script, that preloads the very specific character, on top of the default Linux International Components for Unicode (ICU). The reason the MATLAB ICU cannot be loaded solely is because Pylon, the library for the vision, requires access to another character from the standard Linux ICU.
+Because MATLAB Engine relies on its own MATLAB International Components for Unicode (ICU), the program must be started through a shell script, running on top of the default Linux ICU. The reason the MATLAB ICU cannot be loaded solely is because Pylon, the library for vision, requires access to the standard Linux ICU.
 
 
 
