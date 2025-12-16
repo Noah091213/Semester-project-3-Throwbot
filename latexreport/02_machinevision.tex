@@ -120,7 +120,7 @@ Undistortion and Rectification: The input image is first undistorted using the i
 Preprocessing: The rectified image is converted to grayscale and blurred using a Gaussian filter. This reduces image noise and improves the reliability of edge detection.
 
 Hough Transform: Circular features are detected using \texttt{cv::HoughCircles}.
-The threshold value for edge detection and the circle confidence value are provided by the main program (typically 50 and 30, though these values can be tweaked further). The minimum and maximum radius are constrained to 70-80 mm to ensure that only the defined target is detected.
+The threshold value for edge detection and the circle confidence value are provided by the main program (typically 50 and 30 respectively, though these values can be tweaked further). The minimum and maximum radius are set to 150 and 180 pixels to ensure that only the defined target is detected.
 
 \subsection{Table to World Transformation}
 The final step converts the detected target location into the world frame. Since the rectified image is scaled in millimeters, the center coordinates $(c_x, c_y)$ returned by the Hough transform represent physical distances from the table origin.
