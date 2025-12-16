@@ -4,17 +4,14 @@
 \section{Gripper}
 
 The gripper used by the project is WSG50 from Weiss. The connection to the gripper happens with a Transmission Control Protocol (TCP) server and client. The gripper is the TCP server, and the TCP client is made in a c++ class.
-To control the gripper 4 functions are used. HOME(), GRIP(), RELEASE(), BYE(). \cite{WSGmanual}
-
-HOME() is called when the connection to the gripper is made. that is to insure the gripper starts in the same position. 
-
-GRIP() function works by the gripper keeps closing until a 80N force is reached.
-
-RELEASE() function works by opening the gripper 5 mm.
-
-BYE() funciton closes the connection to the gripper safely.
-
-Each function returns "ACK function name()" when it starts, and returns "FIN function name()" when it is done. Exept BYE() which only return "FIN BYE()".
+To control the gripper 4 functions are used. \texttt{HOME()}, \texttt{GRIP()}, \texttt{RELEASE()}, \texttt{BYE()}. \cite{WSGmanual}
+\begin{itemize}[noitemsep]
+	\item \texttt{HOME()} is called when the connection to the gripper is made. that is to insure the gripper starts in the same position. 
+	\item \texttt{GRIP()} function works by the gripper keeps closing until a 80N force is reached.
+	\item \texttt{RELEASE()} function works by opening the gripper 5 mm.
+	\item \texttt{BYE()} funciton closes the connection to the gripper safely.
+\end{itemize}
+Each function returns "ACK function name()" when it starts, and returns "FIN function name()" when it is done. Except BYE() which only return "FIN BYE()".
 
 \begin{figure}[h!]
 	\centering
