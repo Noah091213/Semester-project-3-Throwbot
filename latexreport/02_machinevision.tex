@@ -1,9 +1,8 @@
 \chapter{Machine Vision}
 \label{chap:machinevision}
 Since the robot needs to be able to hit a specific target which can be in different places, a form of machine vision is needed. In particular some sort of algorhithm which can find the defined target.
-A Basler Pylon (Model Nr. acA 1440-220uc with C125-0418-5M lens) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries. 
+A Basler Pylon (Model Nr. acA 1440-220uc with C125-0418-5M lens) camera is used for this purpose, this makes it possible to easily integrate it into the C++ code over a USB conection using Basler Pylons libraries, together with OpenCV. 
 
-Since the camera distorts and warps the image because of the lense and the camera mounting position skews the perspective, calibration will be required. So, before the algorithm can be implemented this will need to be accounted for. Both the calibration and algorithm are implemented using OpenCV, a standard machine vision toolbox used for this exact purpose.
 
 \section{Calibration}
 The camera is modeled using the pinhole-model. This takes every point in 3D space and projects it through a single point, the pinhole, and hits the image plane forming a 2D image. However, in the real world light bends going through the lense so this needs to be modeled as well. 
@@ -83,7 +82,7 @@ j = p_{10} \cdot i' + p_{11} \cdot j' + p_{12} - p_{20} \cdot j \cdot i' - p_{21
 \end{align}
 Since each pair of corresponding points $(i', j') \leftrightarrow (i, j)$ gives two equations, and there are 8 unknowns, means at least four point pairs are needed to solve the system. This is set up as a matrix equation $\mathbf{Ap} = \mathbf{b}$ \cite{CameraCalibration}, where $\mathbf{p}$  contains the unknown homography entries. Solving this gets the specific values for the homography matrix $\mathbf{H}$, which makes it possible to convert any pixel coordinate in the image to a physical coordinate on the table.
 
-\section{Finding circular objects}
+\section{Finding Circular Objects}
 Objects in the image are detected using the Hough transform, which is a feature extraction technique commonly used in machine vision. The purpose of this method is to detect geometric shapes that can be described by mathematical equations, such as straight lines or circles, even when the image is noisy or if edges are incomplete. For the purposes of this project, the circle variant is used as that is what best describes the defined target. \newline
 
 A circle with a fixed radius $r$ is defined by the equation:
@@ -106,11 +105,11 @@ The machine vision system is implemented as a dedicated C++ class, \texttt{Visio
 \subsection{Calibration Implementation}
 The calibration process consists of two stages: intrinsic camera calibration and table plane rectification.
 
-Using \texttt{Vision::calibrateCam} to find the intrinsics and distortion coefficients, 20 images are captured, and the inner chessboard corners are detected using \texttt{cv::findChessboardCorners}. These corner locations are refined to sub-pixel accuracy using \texttt{cv::cornerSubPix} before being passed to \texttt{cv::calibrateCamera}. The resulting camera matrix and distortion coefficients are saved to a .yaml file with the tableID in the filename so that the calibration can be reused later and there can be seperate calibrations for each table if needed, as there can be differences in the camera setup.
+Using \texttt{Vision::calibrateCam} to find the intrinsics and distortion coefficients, 20 images are captured, and the inner chessboard corners are detected using \texttt{cv::findChessboardCorners}. These corner locations are refined to sub-pixel accuracy using \texttt{cv::cornerSubPix} before being passed to \texttt{cv::calibrateCamera}. The resulting camera matrix and distortion coefficients are saved to a .yaml file with the tableID in the filename.
 
 Then, to map image coordinates to the physical table plane, the \texttt{Vision::calibrateTableCorners} function computes a homography matrix $\mathbf{H}$. The user selects the four corners of the table in the image using a mouse callback. These pixel coordinates are paired with known real-world table coordinates defined in millimeters.
 
-Afterwards, the homography matrix is computed using \texttt{cv::findHomography}, now applying \texttt{cv::warpPerspective} produces a rectified, top-down view of the table where distances in the image directly correspond to physical distances on the table. This homography matrix is then also saved to a .yaml file.
+Afterwards, the homography matrix is computed using \texttt{cv::findHomography}, now applying \texttt{cv::warpPerspective} produces a rectified, top-down view of the table where distances in the image directly correspond to physical distances on the table. This homography matrix is then also saved to a .yaml file with a tableID.
 
 \subsection{Object Detection}
 The circular target object is detected in the \texttt{Vision::findCircularObject} method using the following steps:
