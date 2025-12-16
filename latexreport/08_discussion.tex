@@ -34,6 +34,13 @@ To improve robustness, an outlier detection procedure was applied by evaluating 
 
 After removing the outliers, the calibration was repeated, resulting in RMS errors between 0.0005 m and 0.0012 m. This significant reduction demonstrates the strong impact of outliers on transformation estimation and confirms the effectiveness of data filtering. The final transformation is therefore considered substantially more reliable and suitable for applications requiring accurate spatial alignment, highlighting the importance of careful data acquisition and validation in manually performed calibration procedures.
 
+\subsection{Matlab communication}
+In the final program Matlab Engine was used, but other options were explored. Alternatives include but are not limited to Matlab MEX functions and Comma-Separated Values file communication (CSV). CSV is the crudest version of this communication, as it required Matlab to already be running and checking the CSV file for changes. The code did work and made changes on one side very easy, but having two programs running defeated the point of integrating Matlab to have one seamless system, so it was decided to move away from CSV. Some of the code was repurposed for the storing of data, as mentioned in\ref(chap:datacollection).
+
+The other options explored are native to Matlab. MEX is a way of recompiling a Matlab script into something that can be directly integrated into, among others, C++. It works by compiling both the script and the C++ code in Matlab and running it in that environment. That means that data can be passed back and forth directly in memory and would in theory be faster than Matlab engine. Downsides do however include limitations to toolboxes that were needed, and the fact that running it in Matlab could introduce more problems with communication with the robot and camera. 
+
+Matlab engine works by starting the script as a process in the background, passing the data by value through the API, running it through the script, and returning it by value through the API to the C++ code. This is in theory slower, and with more data than needed for this project, it could be an issue having multiple copies of the same data. However, using it allowed running the C++ code natively instead of in Matlab, was easier to compile with libraries, allowed the use of toolboxes like the Robotics System Toolbox, all while still integrating Matlab directly with the C++ code, and therefore Matlab engine was the preferred option in this project.
+
 \section{Results}
 The results from the testing phase gives an indication as to how each parameter impacts the system. Firstly, the testing was done by simulating throws using varied parameters to find a suitable setup for the real-world testing.
  
