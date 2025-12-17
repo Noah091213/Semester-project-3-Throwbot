@@ -9,26 +9,26 @@
 std::vector<double> callMatlab(std::vector<double> input) {
     
     std::cout << "Starting matlab script..." << std::endl;
-    std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr = matlab::engine::startMATLAB();
+    std::unique_ptr<matlab::engine::MATLABEngine> matlabPtr = matlab::engine::startMATLAB();    // Start the Matlab script process, pointer to this is the matlabPtr
     
-    matlab::data::ArrayFactory factory;
+    matlab::data::ArrayFactory factory; // All data sent to Matlab has to be in their data format, thus a Matlab data array factory is needed
 
-    std::vector<size_t> dims = {1, static_cast<size_t>(input.size())};
+    std::vector<size_t> dims = {1, static_cast<size_t>(input.size())}; // Matlab engine requires VERY specific data types to interact, so the simple array size cannot compile just with an int
 
-    auto arrayInput = factory.createArray<double>(
+    auto arrayInput = factory.createArray<double>(  // Create the actual array for matlab with dimensions of dims, and all the data in the input vector
         dims,
         input.data(), 
         input.data()+input.size()
     );
 
-    std::vector<matlab::data::Array> functionInput({arrayInput});
+    std::vector<matlab::data::Array> functionInput({arrayInput});   // If more data would be sent, storing it in an array is helpful
 
-    matlabPtr->eval(u"addpath('..')");
+    matlabPtr->eval(u"addpath('..')");  // Add the path where the script is located
     
-    matlab::data::TypedArray<double> result = matlabPtr->feval(u"throwCalc", functionInput);
+    matlab::data::TypedArray<double> result = matlabPtr->feval(u"throwCalc", functionInput);    // Run the script with the input of the Matlab array and return result in an array
 
     std::cout << "finished matlab script\n" << std::endl;
-    std::vector<double> vecResult(result.begin(), result.end());
+    std::vector<double> vecResult(result.begin(), result.end());    // Convert Matlab array to C++ vector
 
     return vecResult;
 }
@@ -75,7 +75,6 @@ std::vector<std::vector<double>> sortMatlabResult (std::vector<double> matlabRes
         qStart = { matlabResult[1], matlabResult[2], matlabResult[3], matlabResult[4], matlabResult[5], matlabResult[6] }; // Save the qStart
         
         for (int i = 2; i < (matlabResult.size()/6+1); i++) {   // Loop through the remaining parts of the matlab data vector and store the data for joint positions
-            //std::cout << "index to sort: " << i << std::endl;
 
             std::vector<double> tmp = { matlabResult[i*6-5], matlabResult[i*6-4], matlabResult[i*6-3],matlabResult[i*6-2], matlabResult[i*6-1], matlabResult[i*6] };
             
@@ -97,42 +96,10 @@ void showSortedData(std::vector<std::vector<double>> input) {
     
     std::cout << "\nInput size is: " << input.size() <<"\nError code is: ";
     
-    for (int x = 0; x < input.size(); x++) {
+    for (int x = 0; x < input.size(); x++) {    // Simple for loop to show all the data in the 2 dimensional sorted vector
         for (int y = 0; y < input[x].size(); y++) {
             std::cout << input[x][y] << std::endl;
         }
         std::cout << "\nNext position!\n" << std::endl;
     }
 }
-
-
-/*
-int main() {    // Main is only needed for testing these functions individually. Uncomment and run isolated to test
-    
-    std::cout << "Beginning setup" << std::endl;
-    std::vector<double> releasePosition = {2.0, 2.0, 2.0};
-    std::vector<double> qStartPos       = {3.0, 3.0, 3.0, 3.0, 3.0, 3.0};
-    std::vector<std::vector<double>> transformation = { {4.0, 4.0, 4.0, 4.0},
-                                                        {5.0, 5.0, 5.0, 5.0},
-                                                        {6.0, 6.0, 6.0, 6.0},
-                                                        {7.0, 7.0, 7.0, 7.0} };
-
-
-    std::vector<double> preparedData = createDataToSend(releasePosition, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, qStartPos, transformation);
-    
-    for (int i = 0; i < preparedData.size(); i++) {
-        std::cout << preparedData[i] << std::endl;
-    }
-
-    std::vector finishedDataPoints = callMatlab(preparedData);
-
-    for (int i = 0; i < finishedDataPoints.size(); i++) {
-        std::cout << finishedDataPoints[i] << std::endl;
-    }
-    
-    std::vector<double> test = {2.2, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0};
-    std::vector<std::vector<double>> sortedTest = sortMatlabResult(test);
-    showSortedData(sortedTest);
-
-    return 0;
-}*/
