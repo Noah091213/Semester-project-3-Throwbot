@@ -78,8 +78,6 @@ Further simulation tests were done to evaluate the impact of the model's acceler
 	\end{tabular}
 \end{table}
 
-The tests show similar results, where increasing the acceleration decreases the risk of hitting a joint limit. However, the increase in acceleration also causes more throws to exceed the TCP limits. Additionally, it is seen that more viable paths are found and that more targets can indeed be reached.
-
 \begin{figure}[h!]
 	\centering
 	\begin{subfigure}[]{0.25\textwidth}
@@ -112,6 +110,13 @@ The tests show similar results, where increasing the acceleration decreases the 
 	\label{fig:TableOverview}
 \end{figure}
 
+
+\newpage
+
+The tests show similar results, where increasing the acceleration decreases the risk of hitting a joint limit. However, the increase in acceleration also causes more throws to exceed the TCP limits. Additionally, it is seen that more viable paths are found and that more targets can indeed be reached.
+
+\newpage
+\noindent
 In addition to the simulated test throws, a series of real-world throws were also conducted. Since the model and robot can have different accelerations applied to them, the relationship between the two could also impact the robot's precision. Figure \ref{fig:MAE_Velocity} shows the Mean Absolute Error in $rad/s$ across different relative accelerations. The model uses a constant acceleration of $5 rad/s^2$ while the robots acceleration is varied relative the model's. 
 
 \begin{figure}[h!]
@@ -143,6 +148,8 @@ Table \ref{tab:test_throw} shows the results of 100 throws across different targ
 
 The first three setups show relatively similar results, with only the last setup being significantly different. The setup using a 48ms release offset resulted in only 20\% misses compared to around 40\% for the other three. Additionally, the last test showed a considerable increase in clean hits, with only 15\% of total hits being boundary hits. 
 
+\newpage
+\noindent
 With the data from both the model and robot, it is possible to compare their velocities over time during a throw. Figure \ref{fig:VelocityOverTime} shows the velocity of both robot and model for the 4 most active joints during a throwing sequence. 
 
 \begin{figure}[h!]
