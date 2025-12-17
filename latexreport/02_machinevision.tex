@@ -44,7 +44,7 @@ CameraMatrix = \begin{pmatrix}
 \end{align}
 Where $f_x$, $f_y$ is the focal lengths and $x_0$, $y_0$ is the pinhole offset. \newline
 
-To calculate all of these parameters, a standard already known method is used \cite{CameraCalibration}. This uses multiple images of a chessboard to find points with known distances between them in the cameras field of view to calculate the intrinsic camera matrix and lens distortion coefficients. However, these parameters do not correct the perspective shift from the camera being at an angle to the table, the homography must be computed as well. Though, as only the table plane is relevant this becomes somewhat relatively simple.
+To calculate all of these parameters, a standard already known method is used \cite{CameraCalibration}. This uses multiple images of a chessboard to find points with known distances between them in the cameras field of view to calculate the intrinsic camera matrix and lens distortion coefficients. However, to know what pixel coordinates correspond to real-world coordinates and to correct the perspective shift from the camera being at an angle, some form of maping is needed.
 
 \section{Homography}
 Since only the table plane is relevant, a linear mapping from the image coordinates to the table coordinates can be computed. This mapping is called a homography, $\mathbf{H}$.
@@ -120,7 +120,7 @@ At last, circular features are detected using \texttt{cv::HoughCircles}.
 The threshold value for edge detection and the circle confidence value are provided by the main program (typically 50 and 30 respectively). The minimum and maximum radius are set to 150 and 180 pixels to ensure that only the defined target is detected.
 
 \subsection{Table to World Transformation}
-The \texttt{Vision::tableToWorld} function transforms these coordinates into the world frame. This consists of a rotation matrix $\mathbf{R}$ and a unit conversion from millimeters to meters:
+The \texttt{Vision::tableToWorld} method transforms these coordinates into the world frame. This consists of a rotation matrix $\mathbf{R}$ and a unit conversion from millimeters to meters:
 \begin{align}
 	\mathbf{P}_{world} = \mathbf{R} \cdot
 	\begin{pmatrix}
