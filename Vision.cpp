@@ -287,13 +287,12 @@ Vec Vision::findCircularObject(const cv::Mat& rectifiedImage, double cannyThresh
 }
 
 std::vector<double> Vision::tableToWorld(const Vec& tableVec) {
-    // 0,0 origin of image is expected to be the opposite table corner of world frame
-    // Rotation matrix, rotate 180deg around Z and flip Z (table orientation compared to world)
+    // Rotation matrix, swap x and y axis and flip z axis to match world frame
     cv::Mat R = (cv::Mat_<double>(3,3) <<
                  0, 1, 0,
                  1, 0, 0,
                  0, 0,-1);
-    // Translation vector (table dimensions)
+    // Translation vector, 0,0,0 as world frame origin position is the same as image frame origin
     cv::Mat t = (cv::Mat_<double>(3,1) << 0, 0, 0);
 
     Vec P;
