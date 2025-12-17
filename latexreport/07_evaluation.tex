@@ -126,9 +126,9 @@ In addition to the simulated test throws, a series of real-world throws were als
 	\label{fig:MAE_Velocity}
 \end{figure}
 
-It is seen that a slight increase in the robots acceleration relative to the model's, generally decreases the absolute mean error. For all further tests, the robots acceleration will be set to 25\% more than the model's.
+It is seen that a slight increase in the robots acceleration relative to the model's, generally decreases the absolute mean error. For all further tests, the robot's acceleration will be set to 25\% more than the model's.
 
-Table \ref{tab:test_throw} shows the results of 100 throws across different target objects and release timings. The two targets used were the dart board and the plastic ring with a diameter similar to the bullseye of the dart board. The release offset determines when the gripper is called to release the ball, relative to the time step in which the ball should lose contact with the robot, i.e. if the ball should be in the air at time step 35, the gripper is called at time step 33 when the offset is 2. The results are segmented into misses, boundary hits and clean hits. A clean hit is defined such that the entire ball must make it inside the bullseye or ring. A boundary hit is counted when the ball is partially inside the bullseye or hits the ring itself. A miss is noted if the ball does not meet one of the two hit requirements.
+Table \ref{tab:test_throw} shows the results of 100 throws across different target objects and release timings. The two targets used were the dart board and the plastic ring with a diameter similar to the bullseye of the dart board. The release offset acts as a lead time for the gripper command. If the ball must lose contact at time step $t$, an offset of 2 triggers the release command at $t - 2$. The results are segmented into misses, boundary hits and clean hits. A clean hit is defined such that the entire ball must make it inside the bullseye or ring. A boundary hit is counted when the ball is partially inside the bullseye or hits the ring itself. A miss is noted if the ball does not meet one of the two hit requirements.
 
 \begin{table}[h!]
 	\centering
