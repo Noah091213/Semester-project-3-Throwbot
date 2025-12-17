@@ -3,12 +3,10 @@
 
 \section{Physics}
 
-The first part of finding the trajectory of an object is to find its path given two coordinates, the release and target coordinate. With the given coordinates yaw, pitch and start velocity ($\mathbf{v}_{\text{0}}$) can be calculated for the release position. Assuming that the release coordinate is in (0. 0. 0) yaw is calculated with $\arctan_2(x, y)$. To calculate $\mathbf{v}_{\text{0}}$ the following function, where $\theta_z$ is pitch, is used: 
-\begin{align}
+The first part of finding the trajectory of an object is to find its path given two coordinates, the release and target coordinate. With the given coordinates yaw, pitch and start velocity ($\mathbf{v}_{\text{0}}$) can be calculated for the release position. Assuming that the release coordinate is in (0. 0. 0) yaw is calculated with $\arctan_2(x, y)$. To calculate $\mathbf{v}_{\text{0}}$ where $\theta_z$ is pitch, the equation \ref{eq:velocity} is used \cite{physics}. To find the pitch which has the lowest $\mathbf{v}_{\text{0}}$, 1000 pitches spaced linearly between 22.5 and 90 degrees are checked.  
+\begin{align} \label{eq:velocity}
 	v_0 = \sqrt{\frac{g \cdot \sqrt{x² + y²}}{2 \cos^2(\theta_z) (\sqrt{x² + y²} \tan(\theta_z) - z)}}
 \end{align}
-
-To find the pitch which has the lowest $\mathbf{v}_{\text{0}}$, 1000 pitches spaced linearly between 22.5 and 90 degrees are checked. 
  
 \section{Kinematics}
 Given the object trajectory required to hit the target, the movement of the robot can be determined such that the object reaches the desired velocity and direction at the point of release. The objective is to move the tool center point (TCP) such that it matches the desired release point, velocity and direction at the moment of release.
